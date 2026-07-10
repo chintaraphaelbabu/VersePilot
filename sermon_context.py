@@ -9,7 +9,7 @@ def clean_text(text: str) -> str:
     from spoken_numbers import normalize_spoken_numbers
     text = normalize_spoken_numbers(text)
     text = text.lower()
-    text = re.sub(r"[^\w\s]", " ", text)
+    text = re.sub(r"[^\w\s\u0C00-\u0C7F]", " ", text)
     text = re.sub(r"\s+", " ", text).strip()
     return text
 
@@ -19,28 +19,28 @@ def parse_voice_command(text: str) -> str | tuple[str, int] | None:
     if not cleaned:
         return None
 
-    if "next verse" in cleaned:
+    if "next verse" in cleaned or "తరువాతి వచనం" in cleaned or "next వచనం" in cleaned:
         return "next_verse"
-    if "previous verse" in cleaned or "prev verse" in cleaned:
+    if "previous verse" in cleaned or "prev verse" in cleaned or "ముందటి వచనం" in cleaned or "previous వచనం" in cleaned or "prev వచనం" in cleaned:
         return "previous_verse"
-    if "next chapter" in cleaned:
+    if "next chapter" in cleaned or "తరువాతి అధ్యాయం" in cleaned or "next అధ్యాయం" in cleaned:
         return "next_chapter"
-    if "previous chapter" in cleaned or "prev chapter" in cleaned:
+    if "previous chapter" in cleaned or "prev chapter" in cleaned or "ముందటి అధ్యాయం" in cleaned or "previous అధ్యాయం" in cleaned or "prev అధ్యాయం" in cleaned:
         return "previous_chapter"
-    if "go back" in cleaned:
+    if "go back" in cleaned or "వెనుకకు" in cleaned or "వెనక్కి" in cleaned:
         return "go_back"
-    if "return to passage" in cleaned or "return to the passage" in cleaned:
+    if "return to passage" in cleaned or "return to the passage" in cleaned or "go back to passage" in cleaned or "తిరిగి వెళ్దాం" in cleaned:
         return "return_to_passage"
     if "continue reading" in cleaned or cleaned == "continue":
         return "continue"
 
     # verse X
-    verse_match = re.search(r"verse\s+(\d+)", cleaned)
+    verse_match = re.search(r"(?:verse|వచనం)\s+(\d+)", cleaned)
     if verse_match:
         return ("jump_to_verse", int(verse_match.group(1)))
 
     # chapter X
-    chapter_match = re.search(r"chapter\s+(\d+)", cleaned)
+    chapter_match = re.search(r"(?:chapter|అధ్యాయం)\s+(\d+)", cleaned)
     if chapter_match:
         return ("jump_to_chapter", int(chapter_match.group(1)))
 

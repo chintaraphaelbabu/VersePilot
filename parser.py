@@ -48,14 +48,22 @@ class BibleReferenceParser:
         return reference
 
     def _normalize(self, text: str) -> str:
+        from normalizer import normalize_telugu_bible_reference
+        text = normalize_telugu_bible_reference(text)
         text = normalize_spoken_numbers(text)
         text = text.lower()
-        text = text.replace("chapter", " ")
         text = text.replace("chapters", " ")
-        text = text.replace("verse", " ")
+        text = text.replace("chapter", " ")
         text = text.replace("verses", " ")
+        text = text.replace("verse", " ")
         text = text.replace("v.", " ")
         text = text.replace("ch.", " ")
+        text = text.replace("అధ్యాయము", " ")
+        text = text.replace("అధ్యాయం", " ")
+        text = text.replace("వచనములు", " ")
+        text = text.replace("వచనాలు", " ")
+        text = text.replace("వచనము", " ")
+        text = text.replace("వచనం", " ")
         text = re.sub(r"[\.,;()\[\]{}]", " ", text)
         text = re.sub(r"\s+", " ", text).strip()
         return text
@@ -67,18 +75,42 @@ class BibleReferenceParser:
                 normalized_alias = alias.lower()
                 exact_index = text.find(normalized_alias)
                 if exact_index != -1:
-                    candidate = _BookMatch(entry, exact_index, exact_index + len(normalized_alias), 100)
-                    if best is None or candidate.score > best.score:
-                        best = candidate
+                    # Verify it's on word boundaries (or at least check boundary characters)
+                    # to prevent matching parts of other words
+                    # Since we normalized, we can check boundaries:
+                    start_boundary = exact_index == 0 or text[exact_index - 1] == ' '
+                    end_boundary = (exact_index + len(normalized_alias)) == len(text) or text[exact_index + len(normalized_alias)] == ' '
+                    if start_boundary and end_boundary:
+                        candidate = _BookMatch(entry, exact_index, exact_index + len(normalized_alias), 100)
+                        if best is None or candidate.score > best.score:
+                            best = candidate
+                        continue
+
+                # Fuzzy matching with window alignment
+                alias_words = normalized_alias.split()
+                text_words = text.split()
+                if not alias_words or not text_words:
                     continue
 
-                score = self._fuzzy_score(normalized_alias, text)
-                if score < self.fuzzy_threshold:
-                    continue
+                window = len(alias_words)
+                for start_w in range(0, max(1, len(text_words) - window + 1)):
+                    candidate_str = " ".join(text_words[start_w : start_w + window])
+                    if fuzz is not None:
+                        score = int(fuzz.ratio(normalized_alias, candidate_str))
+                    else:
+                        score = int(SequenceMatcher(None, normalized_alias, candidate_str).ratio() * 100)
 
-                candidate = _BookMatch(entry, 0, len(normalized_alias), score)
-                if best is None or candidate.score > best.score:
-                    best = candidate
+                    if score >= self.fuzzy_threshold:
+                        # Find indices in the normalized text
+                        char_start = text.find(candidate_str)
+                        if char_start == -1:
+                            char_start = 0
+                            for w in text_words[:start_w]:
+                                char_start += len(w) + 1
+                        char_end = char_start + len(candidate_str)
+                        candidate_match = _BookMatch(entry, char_start, char_end, score)
+                        if best is None or candidate_match.score > best.score:
+                            best = candidate_match
         return best
 
     def _fuzzy_score(self, alias: str, text: str) -> int:
@@ -110,6 +142,7 @@ class BibleReferenceParser:
         patterns = [
             r"(?P<chapter>\d{1,3})\s*[:.]\s*(?P<verse>\d{1,3})(?:\s*[-–]\s*(?P<end_verse>\d{1,3}))?",
             r"(?P<chapter>\d{1,3})\s+(?P<verse>\d{1,3})(?:\s*[-–]\s*(?P<end_verse>\d{1,3}))?",
+            r"(?P<chapter>\d{1,3})\s+(?P<verse>\d{1,3})\s+(?P<end_verse>\d{1,3})",
             r"(?P<chapter>\d{1,3})",
         ]
 
@@ -124,6 +157,14 @@ class BibleReferenceParser:
 
             verse = int(verse_text) if verse_text else None
             end_verse = int(end_verse_text) if end_verse_text else None
+
+            # Validate bounds as requested: chapter up to 150, verse up to 176
+            if chapter > 150:
+                return None
+            if verse is not None and verse > 176:
+                return None
+            if end_verse is not None and end_verse > 176:
+                return None
 
             canonical = book if verse is None else f"{book} {chapter}:{verse}"
             if end_verse is not None:

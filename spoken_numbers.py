@@ -39,39 +39,44 @@ ENGLISH_NUMBER_WORDS = {
     "thousand": 1000,
 }
 
-TELUGU_NUMBER_WORDS = {
-    "సున్నా": 0,
-    "ఒకటి": 1,
-    "మొదటి": 1,
-    "రెండు": 2,
-    "రెండవ": 2,
-    "మూడు": 3,
-    "మూడవ": 3,
-    "నాలుగు": 4,
-    "ఐదు": 5,
-    "ఆరు": 6,
-    "ఏడు": 7,
-    "ఎనిమిది": 8,
-    "తొమ్మిది": 9,
-    "పది": 10,
+TELUGU_ONESE = {
+    "ఒకటి": 1, "ఒకటవ": 1, "ఒకటో": 1, "మొదటి": 1, "మొదటో": 1,
+    "రెండు": 2, "రెండవ": 2, "రెండో": 2,
+    "మూడు": 3, "మూడవ": 3, "మూడో": 3,
+    "నాలుగు": 4, "నాలుగవ": 4, "నాలుగో": 4, "నాల్గవ": 4,
+    "ఐదు": 5, "ఐదవ": 5, "ఐదో": 5, "అయిదు": 5, "అయిదవ": 5, "అయిదో": 5,
+    "ఆరు": 6, "ఆరవ": 6, "ఆరో": 6,
+    "ఏడు": 7, "ఏడవ": 7, "ఏడో": 7,
+    "ఎనిమిది": 8, "ఎనిమిదవ": 8, "ఎనిమిదో": 8,
+    "తొమ్మిది": 9, "తొమ్మిదవ": 9, "తొమ్మిదో": 9
+}
+
+TELUGU_TEENS = {
     "పదకొండు": 11,
     "పన్నెండు": 12,
     "పదమూడు": 13,
     "పద్నాలుగు": 14,
-    "పదిహేను": 15,
+    "పదిహేను": 15, "పదహేను": 15,
     "పదహారు": 16,
-    "పదిహేడు": 17,
+    "పదిహేడు": 17, "పదహేడు": 17,
     "పద్దెనిమిది": 18,
-    "పంతొమ్మిది": 19,
-    "ఇరవై": 20,
-    "ముప్పై": 30,
-    "నలభై": 40,
-    "యాభై": 50,
-    "అరవై": 60,
-    "డెబ్బై": 70,
-    "ఎనభై": 80,
-    "తొంభై": 90,
-    "వంద": 100,
+    "పంతొమ్మిది": 19
+}
+
+TELUGU_TENS = {
+    "పది": 10, "పదవ": 10, "పదో": 10,
+    "ఇరవై": 20, "ఇరవది": 20,
+    "ముప్పై": 30, "ముప్పది": 30,
+    "నలభై": 40, "నలభది": 40,
+    "యాభై": 50, "యాభది": 50, "యాబై": 50,
+    "అరవై": 60, "అరవది": 60,
+    "డెబ్బై": 70, "డెబ్బది": 70, "డెబై": 70,
+    "ఎనభై": 80, "ఎనభది": 80, "ఎనబై": 80,
+    "తొంభై": 90, "తొంభది": 90, "తొంబై": 90
+}
+
+TELUGU_HUNDREDS = {
+    "వంద": 100, "నూట": 100, "నూరు": 100
 }
 
 TOKEN_PATTERN = re.compile(r"[\w\u0C00-\u0C7F]+|[:\-]")
@@ -120,18 +125,45 @@ def _consume_english_number(tokens: list[str], start: int) -> tuple[int | None, 
     return total, consumed
 
 
-def _replace_telugu_number_tokens(tokens: list[str]) -> list[str]:
-    converted: list[str] = []
-    for token in tokens:
-        value = TELUGU_NUMBER_WORDS.get(token)
-        converted.append(str(value) if value is not None else token)
-    return converted
+def _consume_telugu_number(tokens: list[str], start: int) -> tuple[int | None, int]:
+    index = start
+    val = 0
+    consumed = 0
+
+    # 1. Hundreds
+    if index < len(tokens) and tokens[index] in TELUGU_HUNDREDS:
+        val += TELUGU_HUNDREDS[tokens[index]]
+        index += 1
+        consumed += 1
+
+    # 2. Teens, Tens, or Ones
+    if index < len(tokens):
+        t = tokens[index]
+        if t in TELUGU_TEENS:
+            val += TELUGU_TEENS[t]
+            index += 1
+            consumed += 1
+        elif t in TELUGU_TENS:
+            val += TELUGU_TENS[t]
+            index += 1
+            consumed += 1
+            if index < len(tokens) and tokens[index] in TELUGU_ONESE:
+                val += TELUGU_ONESE[tokens[index]]
+                index += 1
+                consumed += 1
+        elif t in TELUGU_ONESE:
+            val += TELUGU_ONESE[t]
+            index += 1
+            consumed += 1
+
+    if consumed > 0:
+        return val, consumed
+    return None, 0
 
 
 def normalize_spoken_numbers(text: str) -> str:
     lowered = text.lower().replace("-", " ")
     tokens = TOKEN_PATTERN.findall(lowered)
-    tokens = _replace_telugu_number_tokens(tokens)
 
     result: list[str] = []
     index = 0
@@ -142,6 +174,14 @@ def normalize_spoken_numbers(text: str) -> str:
             index += 1
             continue
 
+        # Try consuming as Telugu number
+        val_te, consumed_te = _consume_telugu_number(tokens, index)
+        if consumed_te:
+            result.append(str(val_te))
+            index += consumed_te
+            continue
+
+        # Try consuming as English number
         value, consumed = _consume_english_number(tokens, index)
         if consumed:
             result.append(str(value))

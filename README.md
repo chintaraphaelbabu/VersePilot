@@ -1,9 +1,10 @@
 # Voice Bible
 
-Voice Bible listens to a microphone, transcribes speech with Faster-Whisper, parses Bible references in English or Telugu, manages sermon context, and automatically displays them in FreeShow using its official REST API.
+Voice Bible listens to a microphone, transcribes speech with Faster-Whisper, detects spoken intent, parses Bible references in English or Telugu, manages sermon context, and automatically displays them in FreeShow using its official REST API.
 
 ## Features
 
+- **Intent Detection**: Classifies speech into `REFERENCE`, `NAVIGATION`, `CROSS_REFERENCE`, or `IGNORE` to eliminate false positives. The parser runs ONLY for valid actions.
 - **Low-Latency VAD & Whisper Pipeline**: Highly optimized speech detection to send verses as fast as possible.
 - **Sermon Context State Machine**: 
   - Tracks a **Primary** passage (the main scripture being preached).
@@ -69,9 +70,10 @@ You can configure the application using environment variables:
 ## How It Works
 
 ```
-Microphone → VoiceSegmentStream (VAD) → Whisper → BibleReference Parser → SermonContext → Background FreeShow Thread (REST Post)
+Microphone → VoiceSegmentStream (VAD) → Whisper → IntentDetector → BibleReference Parser → SermonContext → Background FreeShow Thread (REST Post)
 ```
 
 - **VAD (Voice Activity Detection)**: Segments audio in real-time, detecting speech start and end with minimal delay.
+- **IntentDetector**: Pre-filters speech completely offline using keyword and regex classification. Ignores unrelated sermon speech to prevent live slide changes.
 - **SermonContext**: Handles logic for primary vs cross-references, commands, and history.
 - **Async REST Poster**: Sends JSON payload `{ "action": "start_scripture", "reference": "BOOK_ID.CHAPTER.VERSE" }` on a separate thread to keep the voice loop completely non-blocking.

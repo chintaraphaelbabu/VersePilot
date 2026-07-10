@@ -16,14 +16,14 @@ class AppConfig:
     whisper_sample_rate: int = 16_000
     frame_ms: int = 30
     padding_ms: int = 150
-    silence_ms: int = 250
+    silence_ms: int = 1500
     min_speech_ms: int = 400
-    max_utterance_ms: int = 2500
+    max_utterance_ms: int = 60000
     log_level: str = "INFO"
     language: LanguageOption = None
     freeshow_host: str = "127.0.0.1"
     freeshow_port: int = 5506
-    whisper_mode: str = "BALANCED"
+    whisper_mode: str = "ACCURATE"
 
 
 def load_config() -> AppConfig:
@@ -34,7 +34,7 @@ def load_config() -> AppConfig:
     elif mode_upper == "ACCURATE":
         default_model = "medium"
     else:
-        default_model = "small"
+        default_model = "medium"
 
     return AppConfig(
         whisper_model_name=os.getenv("VERSE_WHISPER_MODEL_NAME", os.getenv("VERSE_MODEL_SIZE", default_model)),
@@ -43,9 +43,9 @@ def load_config() -> AppConfig:
         whisper_sample_rate=int(os.getenv("VERSE_WHISPER_SAMPLE_RATE", "16000")),
         frame_ms=int(os.getenv("VERSE_FRAME_MS", "30")),
         padding_ms=int(os.getenv("VERSE_PADDING_MS", "150")),
-        silence_ms=int(os.getenv("VERSE_SILENCE_MS", "250")),
+        silence_ms=int(os.getenv("VERSE_SILENCE_MS", "5000")),
         min_speech_ms=int(os.getenv("VERSE_MIN_SPEECH_MS", "400")),
-        max_utterance_ms=int(os.getenv("VERSE_MAX_UTTERANCE_MS", "2500")),
+        max_utterance_ms=int(os.getenv("VERSE_MAX_UTTERANCE_MS", "60000")),
         log_level=os.getenv("VERSE_LOG_LEVEL", "INFO"),
         language=normalize_language_option(os.getenv("VERSE_LANGUAGE")),
         freeshow_host=os.getenv("FREESHOW_HOST", "127.0.0.1"),
@@ -61,6 +61,8 @@ def normalize_language_option(value: str | None) -> LanguageOption:
     normalized = value.strip().lower()
     if normalized in {"", "none", "auto"}:
         return None
-    if normalized not in {"en", "te"}:
-        raise ValueError("language must be 'en', 'te', or None")
-    return normalized
+    if normalized in {"en", "english"}:
+        return "en"
+    if normalized in {"te", "telugu"}:
+        return "te"
+    raise ValueError("language must be 'AUTO', 'ENGLISH', or 'TELUGU'")
