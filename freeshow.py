@@ -19,8 +19,6 @@ def _reference_to_freeshow(reference: BibleReference) -> str:
     ref_str = f"{book_id}.{reference.chapter}"
     if reference.verse is not None:
         ref_str += f".{reference.verse}"
-        if reference.end_verse is not None:
-            ref_str += f"-{reference.end_verse}"
     return ref_str
 
 
@@ -75,7 +73,7 @@ class FreeShowClient:
         try:
             response = requests.post(self.url, json=payload, timeout=5)
             http_end = time.time()
-            if response.status_code == 200:
+            if response.status_code in (200, 204):
                 print("✓ Sent")
                 self.logger.info("Sent: %s", payload["reference"])
             else:

@@ -141,8 +141,8 @@ class BibleReferenceParser:
 
         patterns = [
             r"(?P<chapter>\d{1,3})\s*[:.]\s*(?P<verse>\d{1,3})(?:\s*[-–]\s*(?P<end_verse>\d{1,3}))?",
-            r"(?P<chapter>\d{1,3})\s+(?P<verse>\d{1,3})(?:\s*[-–]\s*(?P<end_verse>\d{1,3}))?",
             r"(?P<chapter>\d{1,3})\s+(?P<verse>\d{1,3})\s+(?P<end_verse>\d{1,3})",
+            r"(?P<chapter>\d{1,3})\s+(?P<verse>\d{1,3})(?:\s*[-–]\s*(?P<end_verse>\d{1,3}))?",
             r"(?P<chapter>\d{1,3})",
         ]
 

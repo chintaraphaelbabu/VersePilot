@@ -263,9 +263,9 @@ class VoiceSegmentStream:
     def iter_segments(self):
         while not self.stop_event.is_set():
             try:
-                yield self.queue.get(timeout=0.25)
+                yield self.queue.get(timeout=0.5)
             except queue.Empty:
-                continue
+                yield None
 
     def _callback(self, indata, frames, time_info, status) -> None:  # noqa: ANN001
         if status:

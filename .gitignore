@@ -37,3 +37,9 @@ env/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Project-specific: not used in main.py
+scratch/
+freeshow_app/
+requir.txt
+test_*.py

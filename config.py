@@ -16,7 +16,7 @@ class AppConfig:
     whisper_sample_rate: int = 16_000
     frame_ms: int = 30
     padding_ms: int = 150
-    silence_ms: int = 1500
+    silence_ms: int = 200
     min_speech_ms: int = 400
     max_utterance_ms: int = 60000
     log_level: str = "INFO"
@@ -43,7 +43,7 @@ def load_config() -> AppConfig:
         whisper_sample_rate=int(os.getenv("VERSE_WHISPER_SAMPLE_RATE", "16000")),
         frame_ms=int(os.getenv("VERSE_FRAME_MS", "30")),
         padding_ms=int(os.getenv("VERSE_PADDING_MS", "150")),
-        silence_ms=int(os.getenv("VERSE_SILENCE_MS", "5000")),
+        silence_ms=int(os.getenv("VERSE_SILENCE_MS", "200")),
         min_speech_ms=int(os.getenv("VERSE_MIN_SPEECH_MS", "400")),
         max_utterance_ms=int(os.getenv("VERSE_MAX_UTTERANCE_MS", "60000")),
         log_level=os.getenv("VERSE_LOG_LEVEL", "INFO"),

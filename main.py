@@ -90,10 +90,12 @@ def main() -> int:
     last_reference: str | None = None
 
     partial_ref: dict | None = None
-    PARTIAL_TIMEOUT = 5.0
-
+    PARTIAL_TIMEOUT = 60.0
     auto_advance: dict | None = None
+
     last_advance_time: float = 0.0
+
+    last_speech_end: float | None = None
 
     try:
         while True:
@@ -118,13 +120,69 @@ def main() -> int:
                 logger.info("Listening on microphone %s", device.device_index)
                 logger.info("Press Ctrl+C to stop")
                 with VoiceSegmentStream(config, device=device) as stream:
-                    for audio, start_time, end_time in stream.iter_segments():
+                    for item in stream.iter_segments():
+                        if item is None:
+                            # Timeout: no segment for 0.5s
+                            if auto_advance and auto_advance.get("ready") and last_speech_end is not None:
+                                now = time.time()
+                                silence_gap = now - last_speech_end
+                                cv = auto_advance["current_verse"]
+                                ev = auto_advance["end_verse"]
+                                if cv < ev:
+                                    if 1.5 < silence_gap < 12.0:
+                                        if auto_advance.get("waiting"):
+                                            continue
+                                        cv += 1
+                                        auto_advance["current_verse"] = cv
+                                        auto_advance["waiting"] = True
+                                        from parser import BibleReference
+                                        new_ref = BibleReference(
+                                            canonical=f"{auto_advance['book']} {auto_advance['chapter']}:{cv}",
+                                            book=auto_advance["book"],
+                                            chapter=auto_advance["chapter"],
+                                            verse=cv,
+                                        )
+                                        print(f">>> AUTO-ADVANCE to {new_ref.canonical}")
+                                        logger.info("Auto-advance to: %s", new_ref.canonical)
+                                        last_advance_time = now
+                                        last_speech_end = now
+                                        if freeshow is not None:
+                                            freeshow.send_reference(new_ref, 0, 0, 0, 0, now)
+                                        if cv >= ev:
+                                            print("*** AUTO-ADVANCE FINISHED ***")
+                                            logger.info("Auto-advance finished range")
+                                            auto_advance = None
+                                    elif silence_gap >= 12.0:
+                                        initial = auto_advance.get("initial_verse", auto_advance["current_verse"])
+                                        logger.info("Reader stopped for %.1fs, going back to verse %d", silence_gap, initial)
+                                        from parser import BibleReference
+                                        reset_ref = BibleReference(
+                                            canonical=f"{auto_advance['book']} {auto_advance['chapter']}:{initial}",
+                                            book=auto_advance["book"],
+                                            chapter=auto_advance["chapter"],
+                                            verse=initial,
+                                        )
+                                        if freeshow is not None:
+                                            freeshow.send_reference(reset_ref, 0, 0, 0, 0, time.time())
+                                        print(f">>> AUTO-ADVANCE RESET to {reset_ref.canonical}")
+                                        auto_advance = None
+                                        last_speech_end = time.time()
+                            continue
+
+                        audio, start_time, end_time = item
                         whisper_start = time.time()
                         result = engine.transcribe(audio, language_hint=config.language)
                         whisper_end = time.time()
 
                         if not result.text.strip():
                             continue
+
+                        last_speech_end = end_time
+
+                        if auto_advance:
+                            auto_advance["waiting"] = False
+                            if not auto_advance.get("ready"):
+                                auto_advance["ready"] = True
 
                         logger.info("Heard raw: %s", result.text)
                         corrected_text = correction_engine.process_utterance(result.text)
@@ -138,27 +196,6 @@ def main() -> int:
                             continue
 
                         if intent == "IGNORE":
-                            # Auto-advance: if reader read a verse, advance
-                            if auto_advance and auto_advance["current_verse"] < auto_advance["end_verse"]:
-                                speech_duration = end_time - start_time
-                                if speech_duration > 3.0 and (time.time() - last_advance_time) > 8.0:
-                                    auto_advance["current_verse"] += 1
-                                    cv = auto_advance["current_verse"]
-                                    from parser import BibleReference
-                                    new_ref = BibleReference(
-                                        canonical=f"{auto_advance['book']} {auto_advance['chapter']}:{cv}",
-                                        book=auto_advance["book"],
-                                        chapter=auto_advance["chapter"],
-                                        verse=cv,
-                                    )
-                                    logger.info("Auto-advance to: %s", new_ref.canonical)
-                                    now = time.time()
-                                    last_advance_time = now
-                                    if freeshow is not None:
-                                        freeshow.send_reference(new_ref, start_time, end_time, whisper_start, whisper_end, now)
-                                    if cv >= auto_advance["end_verse"]:
-                                        logger.info("Auto-advance finished range")
-                                        auto_advance = None
                             # Check if previous partial ref can combine with this segment
                             if partial_ref and (time.time() - partial_ref["time"]) < PARTIAL_TIMEOUT:
                                 raw_normalized = normalizer.normalize(result.text)
@@ -175,16 +212,18 @@ def main() -> int:
                                     if resolved_reference is not None and resolved_reference.canonical != last_reference:
                                         last_reference = resolved_reference.canonical
                                         logger.info("Detected Bible Reference (combined): %s", resolved_reference.canonical)
-                                        if resolved_reference.verse is not None and resolved_reference.end_verse is not None:
+                                        if resolved_reference.verse is not None:
                                             auto_advance = {
                                                 "book": resolved_reference.book,
                                                 "chapter": resolved_reference.chapter,
                                                 "current_verse": resolved_reference.verse,
-                                                "end_verse": resolved_reference.end_verse,
+                                                "end_verse": resolved_reference.end_verse or 999,
+                                                "initial_verse": resolved_reference.verse,
                                             }
-                                            logger.info("Auto-advance started: %s %d:%d-%d",
+                                            logger.info("Auto-advance started: %s %d:%d%s",
                                                 auto_advance["book"], auto_advance["chapter"],
-                                                auto_advance["current_verse"], auto_advance["end_verse"])
+                                                auto_advance["current_verse"],
+                                                f"-{resolved_reference.end_verse}" if resolved_reference.end_verse else "+")
                                         else:
                                             auto_advance = None
                                         if freeshow is not None:
@@ -203,7 +242,17 @@ def main() -> int:
                                             print(f"Whisper latency: {whisper_latency:.2f} s")
                                     partial_ref = None
                                     continue
-                            partial_ref = None
+                            # If corrected text starts with a book name, store/update partial ref
+                            book_name = corrected_text.split()[0] if corrected_text.split() else ""
+                            if book_name in (b.canonical for b in __import__("books").BOOKS):
+                                normalized = normalizer.normalize(corrected_text)
+                                if not any(c.isdigit() for c in normalized):
+                                    partial_ref = {"text": normalized, "time": time.time()}
+                                    logger.info("Stored partial ref: %s", normalized)
+                                    continue
+                            # Keep existing partial ref alive if still within timeout
+                            if partial_ref and (time.time() - partial_ref["time"]) >= PARTIAL_TIMEOUT:
+                                partial_ref = None
                             continue
 
                         if intent not in ("REFERENCE", "CROSS_REFERENCE", "NAVIGATION"):
@@ -230,16 +279,20 @@ def main() -> int:
                             if resolved_reference.canonical != last_reference:
                                 last_reference = resolved_reference.canonical
                                 logger.info("Detected Bible Reference: %s", resolved_reference.canonical)
-                                if resolved_reference.verse is not None and resolved_reference.end_verse is not None:
+                                if resolved_reference.verse is not None:
                                     auto_advance = {
                                         "book": resolved_reference.book,
                                         "chapter": resolved_reference.chapter,
                                         "current_verse": resolved_reference.verse,
-                                        "end_verse": resolved_reference.end_verse,
+                                        "end_verse": resolved_reference.end_verse or 999,
+                                        "initial_verse": resolved_reference.verse,
                                     }
-                                    logger.info("Auto-advance started: %s %d:%d-%d",
+                                    print(f"\n*** AUTO-ADVANCE ACTIVE *** {resolved_reference.book} {resolved_reference.chapter}:{resolved_reference.verse}" +
+                                        (f"-{resolved_reference.end_verse}" if resolved_reference.end_verse else ""))
+                                    logger.info("Auto-advance started: %s %d:%d%s",
                                         auto_advance["book"], auto_advance["chapter"],
-                                        auto_advance["current_verse"], auto_advance["end_verse"])
+                                        auto_advance["current_verse"],
+                                        f"-{resolved_reference.end_verse}" if resolved_reference.end_verse else "+")
                                 else:
                                     auto_advance = None
                                 if freeshow is not None:

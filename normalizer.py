@@ -110,7 +110,7 @@ NUMBER_WORDS: dict[str, int] = {
     "thirty": 30, "forty": 40, "fifty": 50, "sixty": 60, "seventy": 70, "eighty": 80, "ninety": 90, "hundred": 100,
 }
 
-CORRECTION_WORDS = {"కాదు", "సారీ", "no", "sorry"}
+CORRECTION_WORDS = {"కాదు", "సారీ", "no", "sorry", "ఆ"}
 CHAPTER_WORDS = {"అధ్యాయం", "అధ్యాయము", "chapter", "chapters", "ch"}
 VERSE_WORDS = {"వచనం", "వచనము", "వచనాలు", "verse", "verses", "v"}
 IGNORE_WORDS = {

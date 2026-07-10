@@ -16,7 +16,7 @@ try:
 except ImportError:
     fuzz = None
 
-REPAIR_MARKERS = {"sorry", "no", "actually", "correction", "కాదు", "లేదు", "అంటే"}
+REPAIR_MARKERS = {"sorry", "no", "actually", "correction", "కాదు", "లేదు", "అంటే", "ఆ"}
 
 
 class MutableBibleReference:
