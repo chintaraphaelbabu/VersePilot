@@ -82,7 +82,7 @@ class BibleReferenceParser:
                     end_boundary = (exact_index + len(normalized_alias)) == len(text) or text[exact_index + len(normalized_alias)] == ' '
                     if start_boundary and end_boundary:
                         candidate = _BookMatch(entry, exact_index, exact_index + len(normalized_alias), 100)
-                        if best is None or candidate.score > best.score:
+                        if best is None or candidate.score > best.score or (candidate.score == best.score and (candidate.end - candidate.start) > (best.end - best.start)):
                             best = candidate
                         continue
 
@@ -158,17 +158,22 @@ class BibleReferenceParser:
             verse = int(verse_text) if verse_text else None
             end_verse = int(end_verse_text) if end_verse_text else None
 
-            # Validate bounds as requested: chapter up to 150, verse up to 176
-            if chapter > 150:
+            # Validate bounds: chapter 1–150, verse 1–176
+            if chapter < 1 or chapter > 150:
                 return None
-            if verse is not None and verse > 176:
+            if verse is not None and (verse < 1 or verse > 176):
                 return None
-            if end_verse is not None and end_verse > 176:
+            if end_verse is not None and (end_verse < 1 or end_verse > 176):
                 return None
 
-            canonical = book if verse is None else f"{book} {chapter}:{verse}"
-            if end_verse is not None:
-                canonical = f"{canonical}-{end_verse}"
+            if chapter is None:
+                canonical = book
+            elif verse is None:
+                canonical = f"{book} {chapter}"
+            elif end_verse is not None:
+                canonical = f"{book} {chapter}:{verse}-{end_verse}"
+            else:
+                canonical = f"{book} {chapter}:{verse}"
 
             return BibleReference(
                 canonical=canonical,

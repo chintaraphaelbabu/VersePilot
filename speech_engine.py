@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import tempfile
 import wave
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
 import numpy as np
@@ -20,7 +21,13 @@ class TranscriptionResult:
     average_confidence: float | None
 
 
-class WhisperEngine:
+class SpeechEngine(ABC):
+    @abstractmethod
+    def transcribe(self, audio: np.ndarray, language_hint: str | None = None) -> TranscriptionResult:
+        pass
+
+
+class GoogleSpeechEngine(SpeechEngine):
     def __init__(self, config: AppConfig) -> None:
         self.config = config
         self.recognizer = sr.Recognizer()

@@ -2,14 +2,7 @@ from __future__ import annotations
 
 import re
 from books import BOOKS
-from spoken_numbers import (
-    normalize_spoken_numbers,
-    ENGLISH_NUMBER_WORDS,
-    TELUGU_ONESE,
-    TELUGU_TEENS,
-    TELUGU_TENS,
-    TELUGU_HUNDREDS
-)
+from spoken_numbers import normalize_spoken_numbers
 
 try:
     from rapidfuzz import fuzz
@@ -67,12 +60,25 @@ class CorrectionEngine:
 
         raw_tokens = replaced.strip().split()
 
+        # Second pass: check tokens with Telugu suffixes against book aliases
+        TELUGU_SUFFIXES = ["కు", "కి", "నకు", "ల"]
+
+        def strip_suffix(word: str) -> str:
+            for suffix in TELUGU_SUFFIXES:
+                if word.endswith(suffix) and len(word) > len(suffix) + 1:
+                    return word[:-len(suffix)]
+            return word
+
         tokens = []
         for t in raw_tokens:
             if t in book_replacements:
                 tokens.append(f"BOOK:{book_replacements[t]}")
             else:
-                tokens.append(t)
+                stripped = strip_suffix(t)
+                if stripped != t and stripped in book_replacements:
+                    tokens.append(f"BOOK:{book_replacements[stripped]}")
+                else:
+                    tokens.append(t)
         return tokens
 
     def process_utterance(self, text: str) -> str:

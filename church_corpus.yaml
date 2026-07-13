@@ -1,0 +1,1619 @@
+# Church Sermon Utterance Corpus
+# Each entry: input text + expected parser output.
+# book=null (or omitted) means no reference expected.
+# Add new entries at the end as you collect from real sermons.
+---
+- input: John 3 16
+  book: John
+  chapter: 3
+  verse: 16
+- input: John 3:16
+  book: John
+  chapter: 3
+  verse: 16
+- input: Genesis 1 1
+  book: Genesis
+  chapter: 1
+  verse: 1
+- input: Matthew 5 3
+  book: Matthew
+  chapter: 5
+  verse: 3
+- input: Psalm 23
+  book: Psalms
+  chapter: 23
+- input: Psalms 23 1
+  book: Psalms
+  chapter: 23
+  verse: 1
+- input: Proverbs 3 5
+  book: Proverbs
+  chapter: 3
+  verse: 5
+- input: Exodus 20 1 17
+  book: Exodus
+  chapter: 20
+  verse: 1
+  end_verse: 17
+- input: Romans 8 28
+  book: Romans
+  chapter: 8
+  verse: 28
+- input: Revelation 22 21
+  book: Revelation
+  chapter: 22
+  verse: 21
+- input: Acts 2 38
+  book: Acts
+  chapter: 2
+  verse: 38
+- input: Hebrews 11 1
+  book: Hebrews
+  chapter: 11
+  verse: 1
+- input: Genesis 1 26 28
+  book: Genesis
+  chapter: 1
+  verse: 26
+  end_verse: 28
+- input: Matthew 28 19 20
+  book: Matthew
+  chapter: 28
+  verse: 19
+  end_verse: 20
+- input: Psalm 119 105
+  book: Psalms
+  chapter: 119
+  verse: 105
+- input: Isaiah 53 5
+  book: Isaiah
+  chapter: 53
+  verse: 5
+- input: Jeremiah 29 11
+  book: Jeremiah
+  chapter: 29
+  verse: 11
+- input: Ezekiel 37 1
+  book: Ezekiel
+  chapter: 37
+  verse: 1
+- input: Daniel 3 16
+  book: Daniel
+  chapter: 3
+  verse: 16
+- input: Hosea 11 1
+  book: Hosea
+  chapter: 11
+  verse: 1
+- input: Joel 2 28
+  book: Joel
+  chapter: 2
+  verse: 28
+- input: Amos 3 4
+  book: Amos
+  chapter: 3
+  verse: 4
+- input: Jonah 1 17
+  book: Jonah
+  chapter: 1
+  verse: 17
+- input: Micah 6 8
+  book: Micah
+  chapter: 6
+  verse: 8
+- input: Zechariah 9 9
+  book: Zechariah
+  chapter: 9
+  verse: 9
+- input: Malachi 3 10
+  book: Malachi
+  chapter: 3
+  verse: 10
+- input: Mark 1 1
+  book: Mark
+  chapter: 1
+  verse: 1
+- input: Luke 2 1
+  book: Luke
+  chapter: 2
+  verse: 1
+- input: Acts 1 8
+  book: Acts
+  chapter: 1
+  verse: 8
+- input: Galatians 5 22
+  book: Galatians
+  chapter: 5
+  verse: 22
+- input: Ephesians 2 8
+  book: Ephesians
+  chapter: 2
+  verse: 8
+- input: Philippians 4 13
+  book: Philippians
+  chapter: 4
+  verse: 13
+- input: Colossians 3 16
+  book: Colossians
+  chapter: 3
+  verse: 16
+- input: Titus 2 11
+  book: Titus
+  chapter: 2
+  verse: 11
+- input: Philemon 1 4
+  book: Philemon
+  chapter: 1
+  verse: 4
+- input: James 1 22
+  book: James
+  chapter: 1
+  verse: 22
+- input: John 3:16-18
+  book: John
+  chapter: 3
+  verse: 16
+  end_verse: 18
+- input: Romans 8:28-30
+  book: Romans
+  chapter: 8
+  verse: 28
+  end_verse: 30
+- input: John chapter 3 verse 16
+  book: John
+  chapter: 3
+  verse: 16
+- input: Genesis chapter 1 verse 1
+  book: Genesis
+  chapter: 1
+  verse: 1
+- input: Romans chapter 8
+  book: Romans
+  chapter: 8
+- input: Matthew chapter 5 verse 3
+  book: Matthew
+  chapter: 5
+  verse: 3
+- input: Psalm chapter 23 verse 1
+  book: Psalms
+  chapter: 23
+  verse: 1
+- input: Proverbs chapter 3 verse 5
+  book: Proverbs
+  chapter: 3
+  verse: 5
+- input: Isaiah chapter 53 verse 5
+  book: Isaiah
+  chapter: 53
+  verse: 5
+- input: first John 3 16
+  book: 1 John
+  chapter: 3
+  verse: 16
+- input: second Corinthians 5 17
+  book: 2 Corinthians
+  chapter: 5
+  verse: 17
+- input: first Timothy 3 16
+  book: 1 Timothy
+  chapter: 3
+  verse: 16
+- input: second Timothy 3 16
+  book: 2 Timothy
+  chapter: 3
+  verse: 16
+- input: first Peter 3 15
+  book: 1 Peter
+  chapter: 3
+  verse: 15
+- input: second Peter 1 4
+  book: 2 Peter
+  chapter: 1
+  verse: 4
+- input: third John 1
+  book: 3 John
+  chapter: 1
+- input: first Corinthians 13
+  book: 1 Corinthians
+  chapter: 13
+- input: second Thessalonians 3
+  book: 2 Thessalonians
+  chapter: 3
+- input: Psalms
+- input: Genesis
+- input: Romans
+- input: Revelation
+- input: Proverbs
+- input: Isaiah
+- input: Hebrews
+- input: Genesis 1
+  book: Genesis
+  chapter: 1
+- input: John 3
+  book: John
+  chapter: 3
+- input: Psalms 23
+  book: Psalms
+  chapter: 23
+- input: Romans 8
+  book: Romans
+  chapter: 8
+- input: Proverbs 3
+  book: Proverbs
+  chapter: 3
+- input: Isaiah 53
+  book: Isaiah
+  chapter: 53
+- input: Revelation 22
+  book: Revelation
+  chapter: 22
+- input: Gen 1 1
+  book: Genesis
+  chapter: 1
+  verse: 1
+- input: Ex 20 1
+  book: Exodus
+  chapter: 20
+  verse: 1
+- input: Lev 19 18
+  book: Leviticus
+  chapter: 19
+  verse: 18
+- input: Num 6 24
+  book: Numbers
+  chapter: 6
+  verse: 24
+- input: Deut 6 5
+  book: Deuteronomy
+  chapter: 6
+  verse: 5
+- input: Josh 1 1
+  book: Joshua
+  chapter: 1
+  verse: 1
+- input: Ps 23 1
+  book: Psalms
+  chapter: 23
+  verse: 1
+- input: Prov 3 5
+  book: Proverbs
+  chapter: 3
+  verse: 5
+- input: Isa 53 5
+  book: Isaiah
+  chapter: 53
+  verse: 5
+- input: Jer 29 11
+  book: Jeremiah
+  chapter: 29
+  verse: 11
+- input: Matt 5 3
+  book: Matthew
+  chapter: 5
+  verse: 3
+- input: Heb 11 1
+  book: Hebrews
+  chapter: 11
+  verse: 1
+- input: Rev 22 21
+  book: Revelation
+  chapter: 22
+  verse: 21
+- input: 1 Cor 13
+  book: 1 Corinthians
+  chapter: 13
+- input: 2 Cor 5 17
+  book: 2 Corinthians
+  chapter: 5
+  verse: 17
+- input: 1 Tim 3 16
+  book: 1 Timothy
+  chapter: 3
+  verse: 16
+- input: 2 Tim 3 16
+  book: 2 Timothy
+  chapter: 3
+  verse: 16
+- input: ఆమోసు మూడు నాలుగు
+  book: Amos
+  chapter: 3
+  verse: 4
+- input: ఆమోసు మూడు నాల్గవ వచనం
+  book: Amos
+  chapter: 3
+  verse: 4
+- input: మత్తయి మూడు పదహారు
+  book: Matthew
+  chapter: 3
+  verse: 16
+- input: యోహాను మూడు పదహారు
+  book: John
+  chapter: 3
+  verse: 16
+- input: ఆదికాండము ఒకటి ఒకటి
+  book: Genesis
+  chapter: 1
+  verse: 1
+- input: కీర్తనలు ఇరవై మూడు
+  book: Psalms
+  chapter: 23
+- input: కీర్తనలు ఇరవై మూడు ఒకటి
+  book: Psalms
+  chapter: 23
+  verse: 1
+- input: రోమీయులకు ఎనిమిది ఇరవై ఎనిమిది
+  book: Romans
+  chapter: 8
+  verse: 28
+- input: ప్రకటన ఇరవై రెండు ఇరవై ఒకటి
+  book: Revelation
+  chapter: 22
+  verse: 21
+- input: అపొస్తలుల కార్యములు రెండు ముప్పై ఎనిమిది
+  book: Acts
+  chapter: 2
+  verse: 38
+- input: హెబ్రీయులకు పదకొండు ఒకటి
+  book: Hebrews
+  chapter: 11
+  verse: 1
+- input: యోహాను మూడు పదహారు
+  book: John
+  chapter: 3
+  verse: 16
+- input: యెషయా యాభై మూడు ఐదు
+  book: Isaiah
+  chapter: 53
+  verse: 5
+- input: దానియేలు మూడు పదహారు
+  book: Daniel
+  chapter: 3
+  verse: 16
+- input: యిర్మియా ఇరవై తొమ్మిది పదకొండు
+  book: Jeremiah
+  chapter: 29
+  verse: 11
+- input: యోహాను 3 16
+  book: John
+  chapter: 3
+  verse: 16
+- input: మత్తయి 5 3
+  book: Matthew
+  chapter: 5
+  verse: 3
+- input: కీర్తనలు 23 1
+  book: Psalms
+  chapter: 23
+  verse: 1
+- input: ఆదికాండము 1 1
+  book: Genesis
+  chapter: 1
+  verse: 1
+- input: రోమీయులకు 8 28
+  book: Romans
+  chapter: 8
+  verse: 28
+- input: ప్రకటన 22 21
+  book: Revelation
+  chapter: 22
+  verse: 21
+- input: అపొస్తలుల కార్యములు 2 38
+  book: Acts
+  chapter: 2
+  verse: 38
+- input: హెబ్రీయులకు 11 1
+  book: Hebrews
+  chapter: 11
+  verse: 1
+- input: మత్తయి మూడవ అధ్యాయం పదహారవ వచనం
+  book: Matthew
+  chapter: 3
+  verse: 16
+- input: యోహాను మూడవ అధ్యాయము పదహారవ వచనము
+  book: John
+  chapter: 3
+  verse: 16
+- input: ఆమోసు మూడవ అధ్యాయం నాల్గవ వచనం
+  book: Amos
+  chapter: 3
+  verse: 4
+- input: రోమీయులకు ఎనిమిదవ అధ్యాయము ఇరవై ఎనిమిదవ వచనము
+  book: Romans
+  chapter: 8
+  verse: 28
+- input: కీర్తనలు ఇరవై మూడవ అధ్యాయము ఒకటవ వచనము
+  book: Psalms
+  chapter: 23
+  verse: 1
+- input: మత్తయి సువార్త మూడవ అధ్యాయం
+  book: Matthew
+  chapter: 3
+- input: రోమీయులకు 12వ అధ్యాయము 2వ వచనము
+  book: Romans
+  chapter: 12
+  verse: 2
+- input: మత్తయి 3వ అధ్యాయం 16వ వచనం
+  book: Matthew
+  chapter: 3
+  verse: 16
+- input: కీర్తనలు 23వ అధ్యాయము 1వ వచనము
+  book: Psalms
+  chapter: 23
+  verse: 1
+- input: యోహాను 3వ అధ్యాయము 16వ వచనము
+  book: John
+  chapter: 3
+  verse: 16
+- input: ఆదికాండము 1వ అధ్యాయము 1వ వచనము
+  book: Genesis
+  chapter: 1
+  verse: 1
+- input: ఆమోసు
+- input: మత్తయి
+- input: రోమీయులకు
+- input: కీర్తనలు
+- input: ప్రకటన
+- input: యోహాను
+- input: ఆదికాండము
+- input: హెబ్రీయులకు
+- input: ఆమోసు మూడు
+  book: Amos
+  chapter: 3
+- input: మత్తయి మూడు
+  book: Matthew
+  chapter: 3
+- input: కీర్తనలు ఇరవై మూడు
+  book: Psalms
+  chapter: 23
+- input: యోహాను మూడు
+  book: John
+  chapter: 3
+- input: రోమీయులకు ఎనిమిది
+  book: Romans
+  chapter: 8
+- input: ఆదికాండము ఒకటి
+  book: Genesis
+  chapter: 1
+- input: Romans ఎనిమిది 28
+  book: Romans
+  chapter: 8
+  verse: 28
+- input: John మూడు పదహారు
+  book: John
+  chapter: 3
+  verse: 16
+- input: Matthew అయిదు మూడు
+  book: Matthew
+  chapter: 5
+  verse: 3
+- input: Psalms ఇరవై మూడు ఒకటి
+  book: Psalms
+  chapter: 23
+  verse: 1
+- input: Acts రెండు ముప్పై ఎనిమిది
+  book: Acts
+  chapter: 2
+  verse: 38
+- input: Revelation ఇరవై రెండు ఇరవై ఒకటి
+  book: Revelation
+  chapter: 22
+  verse: 21
+- input: Genesis ఒకటి 1
+  book: Genesis
+  chapter: 1
+  verse: 1
+- input: Romans chapter ఎనిమిది verse ఇరవై ఎనిమిది
+  book: Romans
+  chapter: 8
+  verse: 28
+- input: Matthew chapter అయిదు verse మూడు
+  book: Matthew
+  chapter: 5
+  verse: 3
+- input: John మూడు chapter పదహారు
+  book: John
+  chapter: 3
+  verse: 16
+- input: Psalms chapter ఇరవై మూడు
+  book: Psalms
+  chapter: 23
+- input: Isaiah chapter యాభై మూడు verse ఐదు
+  book: Isaiah
+  chapter: 53
+  verse: 5
+- input: ఆమోసుకు
+- input: రూతుకు
+- input: యోబుకు
+- input: యెహోషువకు
+- input: దానియేలుకు
+- input: ఆమోసుకు మూడు నాలుగు
+  book: Amos
+  chapter: 3
+  verse: 4
+- input: రోమీయులకు వ్రాసిన పత్రిక 12 2
+  book: Romans
+  chapter: 12
+  verse: 2
+- input: ఆది 1 1
+  book: Genesis
+  chapter: 1
+  verse: 1
+- input: నిర్గమ 20 1
+  book: Exodus
+  chapter: 20
+  verse: 1
+- input: ద్వితీయ 6 5
+  book: Deuteronomy
+  chapter: 6
+  verse: 5
+- input: కీర్త 23 1
+  book: Psalms
+  chapter: 23
+  verse: 1
+- input: యెహో 1 1
+  book: Joshua
+  chapter: 1
+  verse: 1
+- input: ప్రక 22 21
+  book: Revelation
+  chapter: 22
+  verse: 21
+- input: రోమీ 8 28
+  book: Romans
+  chapter: 8
+  verse: 28
+- input: గలతీ 3 1
+  book: Galatians
+  chapter: 3
+  verse: 1
+- input: మత్త 3 16
+  book: Matthew
+  chapter: 3
+  verse: 16
+- input: యోహ 3 16
+  book: John
+  chapter: 3
+  verse: 16
+- input: దాని 3 16
+  book: Daniel
+  chapter: 3
+  verse: 16
+- input: హెబ్రీ 11 1
+  book: Hebrews
+  chapter: 11
+  verse: 1
+- input: యూదా 1
+  book: Jude
+  chapter: 1
+- input: ఆదికాండము 1 1
+  book: Genesis
+  chapter: 1
+  verse: 1
+- input: నిర్గమకాండము 20 1
+  book: Exodus
+  chapter: 20
+  verse: 1
+- input: లేవీయకాండము 19 18
+  book: Leviticus
+  chapter: 19
+  verse: 18
+- input: సంఖ్యాకాండము 6 24
+  book: Numbers
+  chapter: 6
+  verse: 24
+- input: ద్వితీయోపదేశకాండము 6 5
+  book: Deuteronomy
+  chapter: 6
+  verse: 5
+- input: యెహోషువ 1 1
+  book: Joshua
+  chapter: 1
+  verse: 1
+- input: న్యాయాధిపతులు 2 16
+  book: Judges
+  chapter: 2
+  verse: 16
+- input: రూతు 1 1
+  book: Ruth
+  chapter: 1
+  verse: 1
+- input: ఎజ్రా 1 1
+  book: Ezra
+  chapter: 1
+  verse: 1
+- input: నెహెమ్యా 1 1
+  book: Nehemiah
+  chapter: 1
+  verse: 1
+- input: ఎస్తేరు 1 1
+  book: Esther
+  chapter: 1
+  verse: 1
+- input: యోబు 1 1
+  book: Job
+  chapter: 1
+  verse: 1
+- input: సామెతలు 3 5
+  book: Proverbs
+  chapter: 3
+  verse: 5
+- input: ప్రసంగి 1 1
+  book: Ecclesiastes
+  chapter: 1
+  verse: 1
+- input: పరమగీతము 1 1
+  book: Song of Solomon
+  chapter: 1
+  verse: 1
+- input: యెషయా 53 5
+  book: Isaiah
+  chapter: 53
+  verse: 5
+- input: యిర్మియా 29 11
+  book: Jeremiah
+  chapter: 29
+  verse: 11
+- input: విలాపవాక్యములు 3 22
+  book: Lamentations
+  chapter: 3
+  verse: 22
+- input: యెహెజ్కేలు 37 1
+  book: Ezekiel
+  chapter: 37
+  verse: 1
+- input: దానియేలు 3 16
+  book: Daniel
+  chapter: 3
+  verse: 16
+- input: హోషేయా 11 1
+  book: Hosea
+  chapter: 11
+  verse: 1
+- input: యోవేలు 2 28
+  book: Joel
+  chapter: 2
+  verse: 28
+- input: యోనా 1 17
+  book: Jonah
+  chapter: 1
+  verse: 17
+- input: మీకా 6 8
+  book: Micah
+  chapter: 6
+  verse: 8
+- input: హబక్కూకు 3 1
+  book: Habakkuk
+  chapter: 3
+  verse: 1
+- input: మలాకీ 3 10
+  book: Malachi
+  chapter: 3
+  verse: 10
+- input: లూకా 2 1
+  book: Luke
+  chapter: 2
+  verse: 1
+- input: మార్కు 1 1
+  book: Mark
+  chapter: 1
+  verse: 1
+- input: అపొస్తలుల కార్యములు 1 8
+  book: Acts
+  chapter: 1
+  verse: 8
+- input: యాకోబు 1 22
+  book: James
+  chapter: 1
+  verse: 22
+- input: యూదా 1
+  book: Jude
+  chapter: 1
+- input: Genesis 13 sorry 16 4
+  book: Genesis
+  chapter: 16
+  verse: 4
+- input: John 3 no 4 16
+  book: John
+  chapter: 4
+  verse: 16
+- input: Romans 8 no 9 28
+  book: Romans
+  chapter: 9
+  verse: 28
+- input: John 3 15 sorry 16
+  book: John
+  chapter: 3
+  verse: 16
+- input: Romans 8 1 no 8 28
+  book: Romans
+  chapter: 8
+  verse: 28
+- input: Romans 8 28 no 8 29
+  book: Romans
+  chapter: 8
+  verse: 29
+- input: John 3 15 sorry no 3 16
+  book: John
+  chapter: 3
+  verse: 16
+- input: Matthew 5 no 6 no 7 8
+  book: Matthew
+  chapter: 7
+  verse: 8
+- input: ఆమోసు మూడవ అధ్యాయం కాదు నాలుగవ అధ్యాయం
+  book: Amos
+  chapter: 4
+- input: మత్తయి సువార్త 3 అధ్యాయం సారీ 4 అధ్యాయం 16 వచనం
+  book: Matthew
+  chapter: 4
+  verse: 16
+- input: ఆమోసు మూడు కాదు నాలుగు
+  book: Amos
+  chapter: 4
+- input: మత్తయి మూడు సారీ నాలుగు
+  book: Matthew
+  chapter: 4
+- input: ఆమోసుకు కాదు యోనా
+- input: Romans 8 28 కాదు 8 29
+  book: Romans
+  chapter: 8
+  verse: 29
+- input: యోహాను 3 16 సారీ 3 17
+  book: John
+  chapter: 3
+  verse: 17
+- input: ఆమోసు 3 4 ఆ 3 5
+  book: Amos
+  chapter: 3
+  verse: 5
+- input: Romans 8 1 no 8 28 no 8 29
+  book: Romans
+  chapter: 8
+  verse: 29
+- input: ఆమోసు 1 కాదు 2 కాదు 3 4
+  book: Amos
+  chapter: 3
+  verse: 4
+- input: మత్తయి 5 కాదు 6 కాదు 7 8
+  book: Matthew
+  chapter: 7
+  verse: 8
+- input: no it is John 3 16
+  book: John
+  chapter: 3
+  verse: 16
+- input: I meant Romans 8 28
+  book: Romans
+  chapter: 8
+  verse: 28
+- input: sorry actually Genesis 1 1
+  book: Genesis
+  chapter: 1
+  verse: 1
+- input: no sorry I mean Matthew 5 3
+  book: Matthew
+  chapter: 5
+  verse: 3
+- input: I said Acts 2 no wait Acts 2 38
+  book: Acts
+  chapter: 2
+  verse: 38
+- input: see also John 3 16
+  book: John
+  chapter: 3
+  verse: 16
+- input: compare Romans 8 28
+  book: Romans
+  chapter: 8
+  verse: 28
+- input: చూడండి మత్తయి 5 3
+  book: Matthew
+  chapter: 5
+  verse: 3
+- input: cross reference Genesis 1 1
+  book: Genesis
+  chapter: 1
+  verse: 1
+- input: look at Psalms 23
+  book: Psalms
+  chapter: 23
+- input: see also John 3
+  book: John
+  chapter: 3
+- input: పోల్చి రోమీయులకు 8 28
+  book: Romans
+  chapter: 8
+  verse: 28
+- input: compare with Ephesians 2 8
+  book: Ephesians
+  chapter: 2
+  verse: 8
+- input: see also Matthew 28 19 20
+  book: Matthew
+  chapter: 28
+  verse: 19
+  end_verse: 20
+- input: 1 Timothy 3 16
+  book: 1 Timothy
+  chapter: 3
+  verse: 16
+- input: 2 Timothy 3 16
+  book: 2 Timothy
+  chapter: 3
+  verse: 16
+- input: 1 Corinthians 13
+  book: 1 Corinthians
+  chapter: 13
+- input: 2 Corinthians 5 17
+  book: 2 Corinthians
+  chapter: 5
+  verse: 17
+- input: 1 Kings 18
+  book: 1 Kings
+  chapter: 18
+- input: 2 Kings 2
+  book: 2 Kings
+  chapter: 2
+- input: 1 Samuel 3
+  book: 1 Samuel
+  chapter: 3
+- input: 2 Samuel 3
+  book: 2 Samuel
+  chapter: 3
+- input: 1 Chronicles 1
+  book: 1 Chronicles
+  chapter: 1
+- input: 2 Chronicles 1
+  book: 2 Chronicles
+  chapter: 1
+- input: 1 Peter 3 15
+  book: 1 Peter
+  chapter: 3
+  verse: 15
+- input: 2 Peter 1 4
+  book: 2 Peter
+  chapter: 1
+  verse: 4
+- input: 1 John 1
+  book: 1 John
+  chapter: 1
+- input: 2 John 1
+  book: 2 John
+  chapter: 1
+- input: 3 John 1
+  book: 3 John
+  chapter: 1
+- input: 1 Thessalonians 5
+  book: 1 Thessalonians
+  chapter: 5
+- input: 2 Thessalonians 3
+  book: 2 Thessalonians
+  chapter: 3
+- input: 1 Timothy 4 12
+  book: 1 Timothy
+  chapter: 4
+  verse: 12
+- input: 2 Timothy 1 7
+  book: 2 Timothy
+  chapter: 1
+  verse: 7
+- input: 1 సమూయేలు 3
+  book: 1 Samuel
+  chapter: 3
+- input: 2 సమూయేలు 3
+  book: 2 Samuel
+  chapter: 3
+- input: 1 కొరింథీయులకు 13
+  book: 1 Corinthians
+  chapter: 13
+- input: 2 కొరింథీయులకు 5 17
+  book: 2 Corinthians
+  chapter: 5
+  verse: 17
+- input: 1 తిమోతికి 3 16
+  book: 1 Timothy
+  chapter: 3
+  verse: 16
+- input: 2 తిమోతికి 3 16
+  book: 2 Timothy
+  chapter: 3
+  verse: 16
+- input: 1 పేతురు 3 15
+  book: 1 Peter
+  chapter: 3
+  verse: 15
+- input: 2 పేతురు 1 4
+  book: 2 Peter
+  chapter: 1
+  verse: 4
+- input: 1 యోహాను 1
+  book: 1 John
+  chapter: 1
+- input: 2 యోహాను 1
+  book: 2 John
+  chapter: 1
+- input: 3 యోహాను 1
+  book: 3 John
+  chapter: 1
+- input: 1 రాజులు 18
+  book: 1 Kings
+  chapter: 18
+- input: 2 రాజులు 2
+  book: 2 Kings
+  chapter: 2
+- input: మొదటి తిమోతికి 3 16
+  book: 1 Timothy
+  chapter: 3
+  verse: 16
+- input: రెండవ తిమోతికి 3 16
+  book: 2 Timothy
+  chapter: 3
+  verse: 16
+- input: మొదటి పేతురు 3 15
+  book: 1 Peter
+  chapter: 3
+  verse: 15
+- input: రెండవ పేతురు 1 4
+  book: 2 Peter
+  chapter: 1
+  verse: 4
+- input: మూడవ యోహాను 1
+  book: 3 John
+  chapter: 1
+- input: మొదటి కొరింథీయులకు 13
+  book: 1 Corinthians
+  chapter: 13
+- input: రెండవ కొరింథీయులకు 5 17
+  book: 2 Corinthians
+  chapter: 5
+  verse: 17
+- input: Timothy 3 16
+  book: 1 Timothy
+  chapter: 3
+  verse: 16
+- input: Corinthians 13
+  book: 1 Corinthians
+  chapter: 13
+- input: Samuel 3
+  book: 1 Samuel
+  chapter: 3
+- input: Peter 3 15
+  book: 1 Peter
+  chapter: 3
+  verse: 15
+- input: John 1
+  book: John
+  chapter: 1
+- input: Jude 1
+  book: Jude
+  chapter: 1
+- input: Philemon 1
+  book: Philemon
+  chapter: 1
+- input: Philemon 1 4
+  book: Philemon
+  chapter: 1
+  verse: 4
+- input: Obadiah 1
+  book: Obadiah
+  chapter: 1
+- input: 2 John 1
+  book: 2 John
+  chapter: 1
+- input: 3 John 1
+  book: 3 John
+  chapter: 1
+- input: ఆమోసుకు వ్రాసిన గ్రంథము మూడవ అధ్యాయం నాల్గవ వచనం
+  book: Amos
+  chapter: 3
+  verse: 4
+- input: రోమీయులకు వ్రాసిన పత్రిక 12వ అధ్యాయము 2వ వచనము
+  book: Romans
+  chapter: 12
+  verse: 2
+- input: మత్తయి సువార్త మూడవ అధ్యాయం
+  book: Matthew
+  chapter: 3
+- input: యోహాను సువార్త మూడవ అధ్యాయము పదహారవ వచనము
+  book: John
+  chapter: 3
+  verse: 16
+- input: Romans the epistle to the 8 28
+  book: Romans
+  chapter: 8
+  verse: 28
+- input: the book of Genesis 1 1
+  book: Genesis
+  chapter: 1
+  verse: 1
+- input: మనము ఇప్పుడు ఆమోసు మూడు నాలుగు చూద్దాం
+  book: Amos
+  chapter: 3
+  verse: 4
+- input: ఇప్పుడు మత్తయి మూడు పదహారు తిరగండి
+  book: Matthew
+  chapter: 3
+  verse: 16
+- input: కొంచెం యోహాను 3 16 దయచేసి
+  book: John
+  chapter: 3
+  verse: 16
+- input: మనము రోమీయులకు ఎనిమిది ఇరవై ఎనిమిది చూద్దాం
+  book: Romans
+  chapter: 8
+  verse: 28
+- input: ఆమోసుకు వ్రాసిన గ్రంథము
+- input: రోమీయులకు వ్రాసిన పత్రిక
+- input: మత్తయి సువార్త
+- input: మొదటి కొరింథీయులకు వ్రాసిన పత్రిక 13
+  book: 1 Corinthians
+  chapter: 13
+- input: యోహాను సువార్త 3 16
+  book: John
+  chapter: 3
+  verse: 16
+- input: యెషయా గ్రంథము 53 5
+  book: Isaiah
+  chapter: 53
+  verse: 5
+- input: కీర్తనల గ్రంథము 23 1
+  book: Psalms
+  chapter: 23
+  verse: 1
+- input: ప్రకటన గ్రంథము 22 21
+  book: Revelation
+  chapter: 22
+  verse: 21
+- input: మత్తయి వ్రాసిన సువార్త మూడవ అధ్యాయం పదహారవ వచనం
+  book: Matthew
+  chapter: 3
+  verse: 16
+- input: John 3 16 18
+  book: John
+  chapter: 3
+  verse: 16
+  end_verse: 18
+- input: John 3:16-18
+  book: John
+  chapter: 3
+  verse: 16
+  end_verse: 18
+- input: Romans 8 28 30
+  book: Romans
+  chapter: 8
+  verse: 28
+  end_verse: 30
+- input: Romans 8:28-30
+  book: Romans
+  chapter: 8
+  verse: 28
+  end_verse: 30
+- input: Genesis 1 26 28
+  book: Genesis
+  chapter: 1
+  verse: 26
+  end_verse: 28
+- input: Matthew 28 19 20
+  book: Matthew
+  chapter: 28
+  verse: 19
+  end_verse: 20
+- input: Psalms 119 105
+  book: Psalms
+  chapter: 119
+  verse: 105
+- input: Ephesians 2 8 10
+  book: Ephesians
+  chapter: 2
+  verse: 8
+  end_verse: 10
+- input: Isaiah 53 4 6
+  book: Isaiah
+  chapter: 53
+  verse: 4
+  end_verse: 6
+- input: next verse
+- input: previous verse
+- input: next chapter
+- input: previous chapter
+- input: go back
+- input: go back to passage
+- input: continue
+- input: continue reading
+- input: return to the passage
+- input: verse 5
+- input: chapter 3
+- input: తరువాతి వచనం
+- input: తరువాతి అధ్యాయం
+- input: next వచనం
+- input: previous వచనం
+- input: ముందటి వచనం
+- input: ముందటి అధ్యాయం
+- input: next అధ్యాయం
+- input: prev verse
+- input: prev chapter
+- input: go to verse 10
+- input: go to chapter 5
+- input: turn to the next verse
+- input: let us pray
+- input: good morning everyone
+- input: amen
+- input: hallelujah
+- input: please turn to your neighbor
+- input: let us stand
+- input: thank you
+- input: praise the Lord
+- input: we will now read
+- input: please be seated
+- input: close your eyes
+- input: thank you Jesus
+- input: ఆమెను
+- input: మన ప్రార్థన
+- input: నమస్కారము
+- input: please open your Bibles
+- input: let us worship the Lord
+- input: can we sing together
+- input: let me pray for you
+- input: father we thank you
+- input: in Jesus name we pray
+- input: lift up your hands
+- input: give thanks unto the Lord
+- input: praise him
+- input: Revelation 22 21
+  book: Revelation
+  chapter: 22
+  verse: 21
+- input: John 151 1
+- input: John 3 200
+- input: Genesis 1 0
+- input: 3 16
+- input: 8 28
+- input: '23'
+- input: 1 1
+- input: 12 2
+- input: chapter 3 verse 16
+- input: chapter 3
+- input: chapter 12
+- input: verse 4
+- input: verse 16
+- input: song of solomon 1 1
+  book: Song of Solomon
+  chapter: 1
+  verse: 1
+- input: song of songs 2 1
+  book: Song of Solomon
+  chapter: 2
+  verse: 1
+- input: song 1 1
+  book: Song of Solomon
+  chapter: 1
+  verse: 1
+- input: John 3 15 sorry no 3 16
+  book: John
+  chapter: 3
+  verse: 16
+- input: Romans 8 1 no 8 28 no 8 29
+  book: Romans
+  chapter: 8
+  verse: 29
+- input: ఆమోసు 1 కాదు 2 కాదు 3 4
+  book: Amos
+  chapter: 3
+  verse: 4
+- input: Matthew 5 no 6 no 7 8
+  book: Matthew
+  chapter: 7
+  verse: 8
+- input: Romans 8 first no Romans 9 28
+  book: Romans
+  chapter: 9
+  verse: 28
+- input: John 3 15 no 16 no 17
+  book: John
+  chapter: 3
+  verse: 17
+- input: first of John 3 16
+  book: 1 John
+  chapter: 3
+  verse: 16
+- input: first of Corinthians 13
+  book: 1 Corinthians
+  chapter: 13
+- input: first of Peter 3 15
+  book: 1 Peter
+  chapter: 3
+  verse: 15
+- input: go to Romans 8 28
+  book: Romans
+  chapter: 8
+  verse: 28
+- input: turn to John 3 16
+  book: John
+  chapter: 3
+  verse: 16
+- input: open to Psalms 23
+  book: Psalms
+  chapter: 23
+- input: read Matthew 5 3
+  book: Matthew
+  chapter: 5
+  verse: 3
+- input: verse 16 is so powerful
+- input: look at chapter 3 verse 16
+- input: Romans 8 28 is my favorite
+  book: Romans
+  chapter: 8
+  verse: 28
+- input: John 3 16 reminds us
+  book: John
+  chapter: 3
+  verse: 16
+- input: in Matthew 5 3 we see
+  book: Matthew
+  chapter: 5
+  verse: 3
+- input: going back to Psalms 23
+  book: Psalms
+  chapter: 23
+- input: as we read in Acts 2 38
+  book: Acts
+  chapter: 2
+  verse: 38
+- input: remember Ephesians 2 8
+  book: Ephesians
+  chapter: 2
+  verse: 8
+- input: as it says in Isaiah 53 5
+  book: Isaiah
+  chapter: 53
+  verse: 5
+- input: the gospel of John 3 16
+  book: John
+  chapter: 3
+  verse: 16
+- input: యోహాను 3 16 చూడండి
+  book: John
+  chapter: 3
+  verse: 16
+- input: మత్తయి 5 3 ఎంత అందమైన వచనం
+  book: Matthew
+  chapter: 5
+  verse: 3
+- input: రోమీయులకు 8 28 మనకు గుర్తుంచుకోండి
+  book: Romans
+  chapter: 8
+  verse: 28
+- input: కీర్తనలు 23 1 ప్రభువు నా కాపరి
+  book: Psalms
+  chapter: 23
+  verse: 1
+- input: ఆదికాండము 1 1 దేవుడు ఆకాశాన్ని
+  book: Genesis
+  chapter: 1
+  verse: 1
+- input: యెషయా 53 5 ఆయన దెబ్బలతో
+  book: Isaiah
+  chapter: 53
+  verse: 5
+- input: first Timothy 3 16
+  book: 1 Timothy
+  chapter: 3
+  verse: 16
+- input: second Timothy 3 16
+  book: 2 Timothy
+  chapter: 3
+  verse: 16
+- input: first Corinthians 13
+  book: 1 Corinthians
+  chapter: 13
+- input: second Corinthians 5 17
+  book: 2 Corinthians
+  chapter: 5
+  verse: 17
+- input: third John 1
+  book: 3 John
+  chapter: 1
+- input: first Thessalonians 5
+  book: 1 Thessalonians
+  chapter: 5
+- input: second Thessalonians 3
+  book: 2 Thessalonians
+  chapter: 3
+- input: first Kings 18
+  book: 1 Kings
+  chapter: 18
+- input: second Kings 2
+  book: 2 Kings
+  chapter: 2
+- input: first Samuel 3
+  book: 1 Samuel
+  chapter: 3
+- input: second Samuel 3
+  book: 2 Samuel
+  chapter: 3
+- input: John chapter three verse sixteen
+  book: John
+  chapter: 3
+  verse: 16
+- input: Psalms twenty three
+  book: Psalms
+  chapter: 23
+- input: Romans eight twenty eight
+  book: Romans
+  chapter: 8
+  verse: 28
+- input: Matthew five three
+  book: Matthew
+  chapter: 5
+  verse: 3
+- input: Genesis one one
+  book: Genesis
+  chapter: 1
+  verse: 1
+- input: Acts two thirty eight
+  book: Acts
+  chapter: 2
+  verse: 38
+- input: Hebrews eleven one
+  book: Hebrews
+  chapter: 11
+  verse: 1
+- input: our passage today is John 3 16
+  book: John
+  chapter: 3
+  verse: 16
+- input: the scripture reading is Romans 8
+  book: Romans
+  chapter: 8
+- input: let's read from Psalms 23 1
+  book: Psalms
+  chapter: 23
+  verse: 1
+- input: turn in your Bibles to Matthew 5
+  book: Matthew
+  chapter: 5
+- input: I'll be reading from Ephesians 2 8 10
+  book: Ephesians
+  chapter: 2
+  verse: 8
+  end_verse: 10
+- input: our text is from Genesis 1 1
+  book: Genesis
+  chapter: 1
+  verse: 1
+- input: the word of God from Acts 2 38
+  book: Acts
+  chapter: 2
+  verse: 38
+- input: we continue in Romans 8 28 30
+  book: Romans
+  chapter: 8
+  verse: 28
+  end_verse: 30
+- input: today's message from Philippians 4 13
+  book: Philippians
+  chapter: 4
+  verse: 13
+- input: read from Romans today
+- input: the Gospel of John
+- input: the book of Psalms
+- input: Paul's letter to the Romans
+- input: let us turn to Romans
+- input: we were in Romans last week
+- input: Paul writes in Romans
+- input: as we saw in Matthew
+- input: the prophet Isaiah says
+- input: from verse 16 to 18
+- input: John 3 16 through 18
+  book: John
+  chapter: 3
+  verse: 16
+  end_verse: 18
+- input: Romans 8 verses 28 to 30
+  book: Romans
+  chapter: 8
+  verse: 28
+  end_verse: 30
+- input: first Corinthians 13 4 8
+  book: 1 Corinthians
+  chapter: 13
+  verse: 4
+  end_verse: 8
+- input: Proverbs 3 5 6
+  book: Proverbs
+  chapter: 3
+  verse: 5
+  end_verse: 6
+- input: Ephesians 6 10 18
+  book: Ephesians
+  chapter: 6
+  verse: 10
+  end_verse: 18
+- input: Romans 8 సారీ 9 28
+  book: Romans
+  chapter: 9
+  verse: 28
+- input: ఆదికాండము 1 no 2 3
+  book: Genesis
+  chapter: 2
+  verse: 3
+- input: John 3 16 కాదు 4 16
+  book: John
+  chapter: 4
+  verse: 16
+- input: Matthew 5 సారీ 6 3
+  book: Matthew
+  chapter: 6
+  verse: 3
+- input: Psalms 23 కాదు 24
+  book: Psalms
+  chapter: 24
+- input: first reading John 3 16 then Romans 8 28
+  book: Romans
+  chapter: 8
+  verse: 28
+- input: we read Acts 2 38 and then Romans 8 28
+  book: Romans
+  chapter: 8
+  verse: 28
+- input: Revelation 22 21
+  book: Revelation
+  chapter: 22
+  verse: 21
+- input: John 1 1
+  book: John
+  chapter: 1
+  verse: 1
+- input: 1 Timothy 1 1
+  book: 1 Timothy
+  chapter: 1
+  verse: 1
+- input: John 3 verse 16
+  book: John
+  chapter: 3
+  verse: 16
+- input: John chapter 3 16
+  book: John
+  chapter: 3
+  verse: 16
+- input: Romans 8 verse 28
+  book: Romans
+  chapter: 8
+  verse: 28
+- input: Psalms chapter 23 verse 1
+  book: Psalms
+  chapter: 23
+  verse: 1
+- input: Matthew chapter 5 3
+  book: Matthew
+  chapter: 5
+  verse: 3
+- input: మత్తయి మూడు అధ్యాయం పదహారు వచనం
+  book: Matthew
+  chapter: 3
+  verse: 16
+- input: యోహాను మూడవ అధ్యాయం పదహారు
+  book: John
+  chapter: 3
+  verse: 16
+- input: రోమీయులకు ఎనిమిది అధ్యాయం ఇరవై ఎనిమిది వచనం
+  book: Romans
+  chapter: 8
+  verse: 28
+- input: Psalm 23 the Lord is my shepherd
+  book: Psalms
+  chapter: 23
+- input: John 11 35 Jesus wept
+  book: John
+  chapter: 11
+  verse: 35
+- input: Romans 12 1 2 living sacrifice
+  book: Romans
+  chapter: 12
+  verse: 1
+  end_verse: 2
+- input: Philippians 4 6 7 peace of God
+  book: Philippians
+  chapter: 4
+  verse: 6
+  end_verse: 7
+- input: Proverbs 3 5 6 trust in the Lord
+  book: Proverbs
+  chapter: 3
+  verse: 5
+  end_verse: 6
+- input: 1 John 1 9 confess our sins
+  book: 1 John
+  chapter: 1
+  verse: 9
+- input: Romans 8 28 is my favorite
+  book: Romans
+  chapter: 8
+  verse: 28
+- input: Romans 8 28 is such a comfort
+  book: Romans
+  chapter: 8
+  verse: 28
+- input: I am reading John 3 16 today
+  book: John
+  chapter: 3
+  verse: 16
+- input: this is from Proverbs 3 5
+  book: Proverbs
+  chapter: 3
+  verse: 5
+# Romanized Telugu patterns
+- input: aadikaandamu 1 1
+  book: Genesis
+  chapter: 1
+  verse: 1
+- input: aadikandamu 1 1
+  book: Genesis
+  chapter: 1
+  verse: 1
+- input: yohaanu 3 16
+  book: John
+  chapter: 3
+  verse: 16
+- input: yohanu 3 16
+  book: John
+  chapter: 3
+  verse: 16
+- input: keerthanalu 23 1
+  book: Psalms
+  chapter: 23
+  verse: 1
+- input: kirthanalu 23 1
+  book: Psalms
+  chapter: 23
+  verse: 1
+- input: mattayi 5 3
+  book: Matthew
+  chapter: 5
+  verse: 3
+- input: romiyulaku 8 28
+  book: Romans
+  chapter: 8
+  verse: 28
+- input: prakatan 22 21
+  book: Revelation
+  chapter: 22
+  verse: 21
+- input: prasamgi 3 1
+  book: Ecclesiastes
+  chapter: 3
+  verse: 1
+- input: yobu 1 1
+  book: Job
+  chapter: 1
+  verse: 1
+- input: timotiki 3 16
+  book: 1 Timothy
+  chapter: 3
+  verse: 16
+- input: hebreeyulaku 11 1
+  book: Hebrews
+  chapter: 11
+  verse: 1
+- input: peturu 1 3
+  book: 1 Peter
+  chapter: 1
+  verse: 3
+- input: nakhu aadikaandamu 18 terichinatlayite 13 nunchi 33 varaku
+  book: Genesis
+  chapter: 18
+  verse: 13
+  end_verse: 33
+- input: aadikaandamu 18 13 nunchi 33
+  book: Genesis
+  chapter: 18
+  verse: 13
+  end_verse: 33
+- input: udayakalamlo yohaanu 3 manamandaramu ayithe 16
+  book: John
+  chapter: 3
+  verse: 16
+- input: mattayi 5 priyularaa terichinatlayite 3
+  book: Matthew
+  chapter: 5
+  verse: 3

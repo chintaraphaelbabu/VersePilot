@@ -42,7 +42,7 @@ class _EnergyVad:
             return False
         audio /= 32768.0
         rms = float(np.sqrt(np.mean(np.square(audio))))
-        return rms > 0.012
+        return rms > 0.006
 
 
 class MicrophoneSelector:
@@ -322,7 +322,7 @@ class VoiceSegmentStream:
         supported_rates = {8000, 16000, 32000, 48000}
         if vad_module is None or self.capture_sample_rate not in supported_rates:
             return _EnergyVad()
-        return vad_module.Vad(2)
+        return vad_module.Vad(0)
 
     def _build_resample_ratio(self, source_rate: int, target_rate: int) -> tuple[int, int]:
         fraction = Fraction(target_rate, source_rate).limit_denominator()

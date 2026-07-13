@@ -2,14 +2,8 @@ from __future__ import annotations
 
 import re
 from books import BOOKS
-from spoken_numbers import (
-    normalize_spoken_numbers,
-    ENGLISH_NUMBER_WORDS,
-    TELUGU_ONESE,
-    TELUGU_TEENS,
-    TELUGU_TENS,
-    TELUGU_HUNDREDS
-)
+from normalizer import _SINGLE_BOOK_MAP
+from spoken_numbers import normalize_spoken_numbers, NUMBER_WORDS
 
 try:
     from rapidfuzz import fuzz
@@ -27,6 +21,9 @@ for book in BOOKS:
     for alias in book.aliases:
         _raw_aliases.append(alias.lower())
 
+# Add bare names from _SINGLE_BOOK_MAP (e.g. "peter", "timothy") for intent detection
+_raw_aliases.extend(k for k in _SINGLE_BOOK_MAP if k not in _raw_aliases)
+
 # Deduplicate and sort aliases by length descending to match longer multi-word aliases first
 _raw_aliases = list(set(_raw_aliases))
 _raw_aliases.sort(key=len, reverse=True)
@@ -38,13 +35,7 @@ _BOOK_PATTERN = r"(?:" + "|".join(_aliases) + r")"
 _BOOK_REGEX = re.compile(_L_BOUND + _BOOK_PATTERN + _R_BOUND, re.IGNORECASE)
 
 # Dynamically construct number words or digits pattern
-_all_num_words = (
-    list(ENGLISH_NUMBER_WORDS.keys()) +
-    list(TELUGU_ONESE.keys()) +
-    list(TELUGU_TEENS.keys()) +
-    list(TELUGU_TENS.keys()) +
-    list(TELUGU_HUNDREDS.keys())
-)
+_all_num_words = list(NUMBER_WORDS.keys())
 _all_num_words.sort(key=len, reverse=True)
 _NUMBER_PATTERN = r"(?:\d+|" + "|".join(re.escape(w) for w in _all_num_words) + r")"
 _NUMBER_REGEX = re.compile(_L_BOUND + _NUMBER_PATTERN + _R_BOUND, re.IGNORECASE)
@@ -77,6 +68,9 @@ _NAVIGATION_REGEXES = [
     re.compile(_L_BOUND + r"(?:verse|వచనం)\s+\d+" + _R_BOUND, re.IGNORECASE),
     re.compile(_L_BOUND + r"(?:chapter|అధ్యాయం)\s+\d+" + _R_BOUND, re.IGNORECASE),
     re.compile(_L_BOUND + r"(?:continue|తిరగండి|వెళ్దాం|చూద్దాం|గమనించండి)" + _R_BOUND, re.IGNORECASE),
+    re.compile(_L_BOUND + r"వెనక్కి\s*వెళ్ళండి" + _R_BOUND, re.IGNORECASE),
+    re.compile(_L_BOUND + r"ముందుకు\s*వెళ్ళండి" + _R_BOUND, re.IGNORECASE),
+    re.compile(_L_BOUND + r"తిరిగి\s*వెళ్ళండి" + _R_BOUND, re.IGNORECASE),
 ]
 
 # Cross-reference keywords
@@ -88,7 +82,9 @@ _CROSS_REF_KEYWORDS = [
     "cross reference",
     "cross-reference",
     "చూడండి",
-    "పోల్చి"
+    "చూడు",
+    "పోల్చి",
+    "పోల్చుము"
 ]
 
 
@@ -97,11 +93,10 @@ class IntentDetector:
         pass
 
     def detect(self, text: str) -> tuple[str, float]:
-        # Normalize spoken numbers (e.g. "one" -> "1") and clean text
         normalized = normalize_spoken_numbers(text)
         cleaned = normalized.strip().lower()
 
-        # 1. Check if a Bible book is present
+        # 1. Exact book match (high priority)
         has_book = False
         exact_ref_match = False
 
@@ -110,9 +105,26 @@ class IntentDetector:
             has_book = True
             if _REFERENCE_REGEX.search(cleaned) or _REFERENCE_REGEX.search(text.lower()):
                 exact_ref_match = True
-        elif fuzz is not None:
-            # Fuzzy match books
-            best_score = 0
+
+        if has_book:
+            is_cross_ref = any(kw in cleaned for kw in _CROSS_REF_KEYWORDS)
+            has_number = bool(re.search(r"\b\d+\b", cleaned) or _NUMBER_REGEX.search(cleaned) or _NUMBER_REGEX.search(text.lower()))
+
+            if is_cross_ref:
+                if exact_ref_match or has_number:
+                    return "CROSS_REFERENCE", 0.95
+                return "CROSS_REFERENCE", 0.60
+            if exact_ref_match or has_number:
+                return "REFERENCE", 0.90
+            return "IGNORE", 1.0
+
+        # 2. Navigation check (before fuzzy book match, to avoid false positives)
+        for regex in _NAVIGATION_REGEXES:
+            if regex.search(cleaned) or regex.search(text.lower()):
+                return "NAVIGATION", 1.0
+
+        # 3. Fuzzy book match (only if no exact match and no navigation)
+        if fuzz is not None:
             for alias in _raw_aliases:
                 if len(alias) < 4:
                     if re.search(_L_BOUND + re.escape(alias) + _R_BOUND, cleaned):
@@ -121,36 +133,13 @@ class IntentDetector:
                     continue
                 score = fuzz.partial_ratio(alias, cleaned)
                 if score >= 85:
-                    if score > best_score:
-                        best_score = score
-                        has_book = True
-
-        if has_book:
-            # Check if it is a Cross Reference
-            is_cross_ref = False
-            for kw in _CROSS_REF_KEYWORDS:
-                if kw in cleaned:
-                    is_cross_ref = True
+                    has_book = True
                     break
 
+        if has_book:
             has_number = bool(re.search(r"\b\d+\b", cleaned) or _NUMBER_REGEX.search(cleaned) or _NUMBER_REGEX.search(text.lower()))
-
-            if is_cross_ref:
-                if exact_ref_match or has_number:
-                    return "CROSS_REFERENCE", 0.95
-                return "CROSS_REFERENCE", 0.60  # Low confidence if no verse/chapter numbers
-
-            # Check if it is a Reference
-            if exact_ref_match or has_number:
+            if has_number:
                 return "REFERENCE", 0.90
-
-            # Mentions a book but doesn't have reference structure (e.g., "The Bible says Romans...")
             return "IGNORE", 1.0
 
-        # 2. Navigation Check (only if no Bible book is present)
-        for regex in _NAVIGATION_REGEXES:
-            if regex.search(cleaned) or regex.search(text.lower()):
-                return "NAVIGATION", 1.0
-
-        # Default to IGNORE
         return "IGNORE", 1.0

@@ -24,6 +24,14 @@ class AppConfig:
     freeshow_host: str = "127.0.0.1"
     freeshow_port: int = 5506
     whisper_mode: str = "ACCURATE"
+    reference_builder_timeout: int = 20
+    chapter_silence_timeout: float = 3.0
+    min_confidence: float = 0.80
+    text_match_score_full: int = 85
+    text_match_score_scoped: int = 50
+    buffer_max_chars: int = 300
+    scope_text_min_len: int = 12
+    full_text_min_len: int = 20
 
 
 def load_config() -> AppConfig:
@@ -51,6 +59,14 @@ def load_config() -> AppConfig:
         freeshow_host=os.getenv("FREESHOW_HOST", "127.0.0.1"),
         freeshow_port=int(os.getenv("FREESHOW_PORT", "5506")),
         whisper_mode=whisper_mode,
+        reference_builder_timeout=int(os.getenv("VERSE_BUILDER_TIMEOUT", "20")),
+        chapter_silence_timeout=float(os.getenv("VERSE_CHAPTER_TIMEOUT", "3.0")),
+        min_confidence=float(os.getenv("VERSE_MIN_CONFIDENCE", "0.80")),
+        text_match_score_full=int(os.getenv("VERSE_TEXT_MATCH_FULL", "85")),
+        text_match_score_scoped=int(os.getenv("VERSE_TEXT_MATCH_SCOPED", "50")),
+        buffer_max_chars=int(os.getenv("VERSE_BUFFER_MAX", "300")),
+        scope_text_min_len=int(os.getenv("VERSE_SCOPE_MIN_LEN", "12")),
+        full_text_min_len=int(os.getenv("VERSE_FULL_MIN_LEN", "20")),
     )
 
 

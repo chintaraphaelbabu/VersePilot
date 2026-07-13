@@ -38,8 +38,17 @@ env/
 .DS_Store
 Thumbs.db
 
-# Project-specific: not used in main.py
+# Project-specific exclusions
 scratch/
 freeshow_app/
 requir.txt
-test_*.py
+telugu_bible.json
+
+# Experimental / ad-hoc scripts (not part of the test suite)
+_build_corpus.py
+_gen_romanized.py
+_romanized_output.txt
+test_google_stt.py
+test_google_long.py
+test_normalizer.py
+test_out.txt
