@@ -11,8 +11,14 @@ from reference_builder import ReferenceBuilder, BuilderState
 def test_single_utterance():
     b = ReferenceBuilder(timeout_seconds=20)
     b.process("John 3 16")
+    # ponytail: No range context → WAITING_VERSE, completion deferred to next utterance
+    assert b.state == BuilderState.WAITING_VERSE, f"Expected WAITING_VERSE, got {b.state}"
+    assert b.verse == 16
+    assert b.chapter == 3
+    # Now filler completes it
+    b.process("\u0c06\u0c2e\u0c47\u0c28\u0c4d")
+    assert b.is_complete()
     ref = b.current_reference()
-    assert b.is_complete(), f"Expected complete, got {b.state}"
     assert ref is not None
     assert ref.canonical == "John 3:16", f"Got {ref.canonical}"
     print("  PASS: single utterance")
@@ -143,6 +149,9 @@ def test_consume():
 def test_verse_only_no_range():
     b = ReferenceBuilder()
     b.process("Matthew 5 3")
+    assert b.state == BuilderState.WAITING_VERSE
+    assert b.verse == 3
+    b.process("\u0c06\u0c2e\u0c47\u0c28\u0c4d")  # filler to complete
     assert b.is_complete()
     ref = b.current_reference()
     assert ref is not None
@@ -181,6 +190,41 @@ def test_reference_after_filler():
     print("  PASS: reference after filler")
 
 
+def test_range_extend_after_send():
+    """Simulates clip.webm: build 13-16, ship ref (no consume), then extend to 33."""
+    b = ReferenceBuilder()
+    b.process("\u0c06\u0c26\u0c3f\u0c15\u0c3e\u0c02\u0c21\u0c2e\u0c41 18")
+    b.process("13")
+    b.process("\u0c28\u0c41\u0c02\u0c1a\u0c3f")
+    b.process("16")
+    assert b.is_complete()
+    assert b.current_reference().canonical == "Genesis 18:13-16"
+
+    # Don't consume (matches new pipeline behavior)
+    # Ship the ref, then more audio arrives:
+    b.process("\u0c35\u0c30\u0c15\u0c41 33")
+    assert b.is_complete()
+    ref = b.current_reference()
+    assert ref is not None
+    assert ref.canonical == "Genesis 18:13-33", f"Got {ref.canonical}"
+    print("  PASS: range extend after send")
+
+
+def test_no_regression_on_smaller_number():
+    """Smaller number after a larger range should NOT regress end_verse."""
+    b = ReferenceBuilder()
+    b.process("Genesis 18")
+    b.process("13 \u0c28\u0c41\u0c02\u0c1a\u0c3f 33")
+    assert b.is_complete()
+    assert b.current_reference().canonical == "Genesis 18:13-33"
+
+    # Stutter "16" should NOT shrink the range
+    b.process("16")
+    assert b.is_complete()
+    assert b.current_reference().canonical == "Genesis 18:13-33", f"Got {b.current_reference().canonical}"
+    print("  PASS: no regression on smaller number")
+
+
 if __name__ == "__main__":
     tests = [
         test_single_utterance,
@@ -196,6 +240,8 @@ if __name__ == "__main__":
         test_chapter_only,
         test_numbered_book,
         test_reference_after_filler,
+        test_range_extend_after_send,
+        test_no_regression_on_smaller_number,
     ]
     for t in tests:
         t()

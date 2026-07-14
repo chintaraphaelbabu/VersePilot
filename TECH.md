@@ -30,10 +30,6 @@ verses/
   telugu_bible.json      — 31,101 Telugu Bible (BSI) verses in JSON format
   auto_advance.py        — Auto-advance logic for verse ranges
   church_corpus.yaml     — 488 sermon utterance test cases
-  test_parser.py         — 308 normalizer + parser + intent unit tests
-  test_corpus.py         — Validates church_corpus.yaml against parser
-  test_reference_builder.py — 13 ReferenceBuilder state machine tests
-  test_e2e.py            — 13 end-to-end pipeline tests with mocks
 ```
 
 ---
@@ -76,17 +72,19 @@ for item in stream.iter_segments():
 2. **Auto-advance check** — If auto-advance is active and reader pauses 3s+ with enough segments → advance to next verse
 3. **Correction** — Run `CorrectionEngine.process_utterance()` to detect/repair corrections
 4. **Intent detection** — `IntentDetector.detect()` classifies speech as REFERENCE/NAVIGATION/CROSS_REFERENCE/IGNORE
-5. **Bible text matching** — Append to `text_buffer`, search via `BibleSearch.search_best()`
+5. **ReferenceBuilder (fast, before BibleSearch)** — Feed corrected text into `ReferenceBuilder.process()`. Builder is filler-tolerant; non-reference words never clear accumulated state. 20s timeout resets only if no reference info received.
+6. **Builder narrows scope** — If builder has book+chapter and no search scope yet, narrow `BibleSearch` to that chapter
+7. **Early builder send** — If builder completed a new/updated reference → send to FreeShow immediately, start auto-advance if verse present, skip BibleSearch for this segment
+8. **Bible text matching** — Only if builder didn't already produce a ref. Append to `text_buffer`, search via `BibleSearch.search_best()`
    - Full-Bible search (no scope): require buffer `>= 20` chars and score `>= 85` with 2/3 consensus
    - Scoped search (chapter known): require `>= 12` chars and score `>= 50` (single match trusted)
    - On match: send to FreeShow, set `search_scope`, start auto-advance
-6. **ReferenceBuilder** — Feed corrected text into `ReferenceBuilder.process()`. Builder is filler-tolerant; non-reference words never clear accumulated state. 20s timeout resets only if no reference info received.
-7. **Builder narrows scope** — If builder has book+chapter and no search scope yet, narrow `BibleSearch` to that chapter
-8. **Low-confidence filter** — If `confidence < config.min_confidence`, skip
-9. **IGNORE** — Skip
-10. **NAVIGATION** — Resolve via `SermonContext.process_input()`, send to FreeShow
-11. **REFERENCE / CROSS_REFERENCE** — Check `builder.is_complete()`; if so, send to FreeShow, start auto-advance if verse present
-12. **Error handling** — All internal processing wraps in try/except with `logger.error(exc_info=True)` to prevent crashes
+9. **Low-confidence filter** — If `confidence < config.min_confidence`, skip
+10. **IGNORE** — Fallback: if builder completed a new ref (not caught by early send) → send. Otherwise skip.
+11. **NAVIGATION** — Resolve via `SermonContext.process_input()`, send to FreeShow
+12. **REFERENCE / CROSS_REFERENCE** — Check `builder.is_complete()`; if so, send to FreeShow, start auto-advance if verse present
+13. **Error handling** — All internal processing wraps in try/except with `logger.error(exc_info=True)` to prevent crashes
+14. **Per-utterance timing breakdown logged** (SR, Corr, Intent, Bible, Ctx, FS, Total)
 
 ---
 
@@ -311,16 +309,17 @@ Audio (church feed)
         2. Auto-advance check  — gap > 3s + criteria → advance verse
         3. CorrectionEngine.process_utterance()
         4. IntentDetector.detect()  — REFERENCE / NAVIGATION / CROSS_REFERENCE / IGNORE
-        5. Bible text matching  — text_buffer → BibleSearch.search_best()
+        5. ReferenceBuilder.process(corrected_text)  — fast, before BibleSearch
+        6. Builder scope → narrow BibleSearch if book+chapter known
+        7. Early builder send → if builder completed new ref → FreeShow + skip BibleSearch
+        8. Bible text matching (fallback)  — text_buffer → BibleSearch.search_best()
            → If match + consensus → FreeShow + auto_advance + search_scope
-        6. ReferenceBuilder.process(corrected_text)  — filler-tolerant state machine
-        7. Builder scope → narrow BibleSearch if book+chapter known
-        8. Confidence filter  — skip if < config.min_confidence
-        9. IGNORE → skip
-        10. NAVIGATION → SermonContext → FreeShow
-        11. REFERENCE/CROSS_REFERENCE → if builder complete → FreeShow + auto_advance
-        12. Catch-all exception handler → log + continue (no crash)
-        13. Per-utterance timing breakdown logged (SR, Corr, Intent, Bible, Ctx, FS, Total)
+        9. Confidence filter  — skip if < config.min_confidence
+        10. IGNORE → fallback: if builder completed new ref → send. Else skip.
+        11. NAVIGATION → SermonContext → FreeShow
+        12. REFERENCE/CROSS_REFERENCE → if builder complete → FreeShow + auto_advance
+        13. Catch-all exception handler → log + continue (no crash)
+        14. Per-utterance timing breakdown logged (SR, Corr, Intent, Bible, Ctx, FS, Total)
 ```
 
 ---

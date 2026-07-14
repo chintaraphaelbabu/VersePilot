@@ -60,7 +60,17 @@ class ReferenceBuilder:
         tokens = tokenize(text)
         classified = classify(tokens)
 
+        self._utterance_had_ref = False
         self._process_classified(classified)
+        # ponytail: Complete on filler utterance so split STT chunks
+        # build the same ref as a single utterance would.
+        if not self._utterance_had_ref:
+            if self.state == BuilderState.WAITING_VERSE and self.verse is not None:
+                self.state = BuilderState.COMPLETE
+                self.last_reference_time = time.time()
+            elif self.state == BuilderState.WAITING_RANGE_END:
+                self.state = BuilderState.COMPLETE
+                self.last_reference_time = time.time()
         self._log_state()
 
     def current_reference(self) -> BibleReference | None:
@@ -138,6 +148,7 @@ class ReferenceBuilder:
 
             # ── range indicator check (overrides type) ──
             if text_lower in RANGE_INDICATORS:
+                self._utterance_had_ref = True
                 if self.state == BuilderState.WAITING_VERSE and self.verse is not None:
                     self.state = BuilderState.WAITING_RANGE_END
                     self.last_reference_time = time.time()
@@ -146,11 +157,15 @@ class ReferenceBuilder:
 
             # ── new book causes reset ──
             if tok.type == "BOOK":
+                self._utterance_had_ref = True
                 self._handle_book(tok, i, classified)
                 i += 1
                 continue
 
             # ── state-specific handling ──
+            if tok.type in ("NUMBER", "CHAPTER", "VERSE"):
+                self._utterance_had_ref = True
+
             if self.state == BuilderState.WAITING_BOOK:
                 self._on_waiting_book(tok)
 
@@ -161,15 +176,21 @@ class ReferenceBuilder:
                 remaining = classified[i + 1:]
                 result = self._on_waiting_verse(tok, remaining)
                 if result == "consumed":
-                    pass  # token was handled
+                    pass
                 elif result == "done":
-                    return  # state machine reached terminal
+                    return  # stop processing this utterance
 
             elif self.state == BuilderState.WAITING_RANGE_END:
                 self._on_waiting_range_end(tok)
 
             elif self.state == BuilderState.COMPLETE:
-                pass  # ignore everything until new book or timeout
+                if tok.type == "NUMBER" and self.verse is not None:
+                    # ponytail: extend range when new number arrives in COMPLETE state.
+                    # Handles stutter/pause split: "13" "nunchi" "16" "nunchi" "33" → 13-33
+                    if self.end_verse is None or tok.value > self.end_verse:
+                        self.end_verse = tok.value
+                        self.last_reference_time = time.time()
+                        self.confidence = 0.99
 
             i += 1
 
@@ -225,13 +246,14 @@ class ReferenceBuilder:
                     self.last_reference_time = time.time()
                     self.confidence = 0.99
                     self.state = BuilderState.COMPLETE
-                    return "done"
+                    return "consumed"
                 # Check if range follows in same utterance
                 if self._has_range_in(remaining):
                     self.state = BuilderState.WAITING_RANGE_END
                     return "consumed"
-                # No range, no end verse — reference complete
-                self.state = BuilderState.COMPLETE
+                # ponytail: No range/end in this utterance — don't complete.
+                # Split chunks like "13" THEN "nundi" THEN "16" must build
+                # the same reference as a single utterance.
                 return "done"
         return None
 

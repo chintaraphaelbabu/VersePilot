@@ -48,7 +48,12 @@ telugu_bible.json
 _build_corpus.py
 _gen_romanized.py
 _romanized_output.txt
-test_google_stt.py
-test_google_long.py
-test_normalizer.py
+
+# All test files and output
+test_*.py
 test_out.txt
+
+# Replay evaluation (code + outputs)
+replay.py
+_batch_replay.py
+replay/

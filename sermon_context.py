@@ -31,18 +31,28 @@ def parse_voice_command(text: str) -> str | tuple[str, int] | None:
         return "go_back"
     if "return to passage" in cleaned or "return to the passage" in cleaned or "go back to passage" in cleaned or "తిరిగి వెళ్దాం" in cleaned:
         return "return_to_passage"
-    if "continue reading" in cleaned or cleaned == "continue":
+    if "continue reading" in cleaned or cleaned == "continue" or "చూద్దాం" in cleaned or "వెళ్దాం" in cleaned:
         return "continue"
 
-    # verse X
-    verse_match = re.search(r"(?:verse|వచనం)\s+(\d+)", cleaned)
+    # verse patterns: "verse 18" or "వచనం 18" or "వచనము 18"
+    verse_match = re.search(r"(?:verse|వచనం|వచనము)\s+(\d+)", cleaned)
     if verse_match:
         return ("jump_to_verse", int(verse_match.group(1)))
 
-    # chapter X
-    chapter_match = re.search(r"(?:chapter|అధ్యాయం)\s+(\d+)", cleaned)
+    # Telugu ordinal-first pattern: "18 వ వచనం" (18th verse)
+    verse_ord = re.search(r"(\d+)\s*వ\s*వచనం", cleaned)
+    if verse_ord:
+        return ("jump_to_verse", int(verse_ord.group(1)))
+
+    # chapter patterns: "chapter 18" or "అధ్యాయం 18" or "అధ్యాయము 18"
+    chapter_match = re.search(r"(?:chapter|అధ్యాయం|అధ్యాయము)\s+(\d+)", cleaned)
     if chapter_match:
         return ("jump_to_chapter", int(chapter_match.group(1)))
+
+    # Telugu ordinal-first pattern: "18 వ అధ్యాయం" or "18 వ అధ్యాయము"
+    ch_ord = re.search(r"(\d+)\s*వ\s*అధ్యాయం", cleaned)
+    if ch_ord:
+        return ("jump_to_chapter", int(ch_ord.group(1)))
 
     return None
 
