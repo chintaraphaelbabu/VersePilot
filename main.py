@@ -19,6 +19,7 @@ from bible_search import BibleSearch
 from parser import BibleReference
 from session import SermonSession, SCOPE_RESET_TIMEOUT
 from reference_builder import ReferenceBuilder
+from candidate_engine import CandidateEngine
 
 
 
@@ -96,6 +97,7 @@ def main() -> int:
 
     session = SermonSession()
     builder = ReferenceBuilder(timeout_seconds=config.reference_builder_timeout)
+    candidate_engine = CandidateEngine()
 
     shutdown_flag = False
 
@@ -152,9 +154,9 @@ def main() -> int:
 
                         audio, start_time, end_time = item
                         whisper_start = time.time()
-                        result = engine.transcribe(audio, language_hint=config.language)
+                        result = candidate_engine.transcribe(audio, language_hint=config.language)
                         if not result.text.strip():
-                            result = engine.transcribe(audio, language_hint=config.language)
+                            result = candidate_engine.transcribe(audio, language_hint=config.language)
                         whisper_end = time.time()
 
                         if not result.text.strip():
@@ -189,7 +191,7 @@ def main() -> int:
 
                         try:
                             _t = time.time()
-                            corrected_text = correction_engine.process_utterance(result.text)
+                            corrected_text = correction_candidate_engine.process_utterance(result.text)
                             t_corr = time.time() - _t
                             logger.info("Heard corrected: %s", corrected_text)
 
@@ -205,43 +207,29 @@ def main() -> int:
                                 session.text_buffer = session.text_buffer[-config.buffer_max_chars:]
                             session.last_search_time = time.time()
 
-                            # Feed into ReferenceBuilder BEFORE BibleSearch (which is slow)
+                            # ── Feed into ReferenceBuilder + Candidate Engine ──
                             builder.check_timeout()
                             builder.process(corrected_text)
 
-                            # Use builder state to narrow BibleSearch scope
                             if builder.book and builder.chapter and session.search_scope is None:
                                 session.search_scope = (builder.book, builder.chapter)
 
-                            # ponytail: send builder refs immediately, skip slow BibleSearch
-                            ref_sent = False
-                            if builder.is_complete():
-                                ref = builder.current_reference()
-                                if ref is not None and ref.canonical != session.last_reference:
-                                    session.last_reference = ref.canonical
-                                    logger.info("DETECTED REFERENCE: %s", ref.canonical)
-                                    if ref.verse is not None:
-                                        session.auto_advance = AutoAdvance(ref.book, ref.chapter, ref.verse, ref.end_verse or 999)
-                                    resolved = sermon_context.process_input(corrected_text, ref)
-                                    if freeshow is not None:
-                                        freeshow.send_reference(resolved or ref, start_time, end_time, whisper_start, whisper_end, time.time())
-                                    ref_sent = True
+                            candidate_engine.update_from_builder(builder)
 
-                            query = session.text_buffer.strip()
+                            # ── BibleSearch ──
+                            query = builder.current_reference().canonical if builder.is_complete() and builder.verse is not None else session.text_buffer.strip()
                             min_len = config.full_text_min_len if session.search_scope is None else config.scope_text_min_len
                             min_score = config.text_match_score_scoped if session.search_scope else config.text_match_score_full
                             bible_match = None
                             t_bible = 0.0
-                            if not ref_sent:
-                                _t = time.time()
-                                should_search = intent != "IGNORE" or bible_search.might_be_bible(query)
-                                if len(query) >= min_len and should_search:
-                                    bible_match = bible_search.search_best(query, search_scope=session.search_scope, min_score=min_score)
-                                t_bible = time.time() - _t
+                            _t = time.time()
+                            should_search = intent != "IGNORE" or bible_search.might_be_bible(query)
+                            if len(query) >= min_len and should_search:
+                                bible_match = bible_search.search_best(query, search_scope=session.search_scope, min_score=min_score)
+                            t_bible = time.time() - _t
 
                             if bible_match and bible_match.score >= min_score:
                                 if session.search_scope is None:
-                                    # Full-Bible search: require 2/3 consensus to avoid false positives
                                     session.match_history.append((bible_match.book, bible_match.chapter))
                                     if len(session.match_history) > 3:
                                         session.match_history.pop(0)
@@ -249,12 +237,11 @@ def main() -> int:
                                                if bk == bible_match.book and ch == bible_match.chapter)
                                     if same < 2:
                                         bible_match = None
-                                # Scoped: trust single match (already narrowed)
                             else:
-                                # Reset consensus on no-match segments
                                 session.match_history.clear()
 
                             if bible_match:
+                                candidate_engine.update_bible_score(bible_match, session.search_scope)
                                 matched_ref = BibleReference(
                                     canonical=f"{bible_match.book} {bible_match.chapter}:{bible_match.verse}",
                                     book=bible_match.book,
@@ -271,21 +258,37 @@ def main() -> int:
                                     if freeshow is not None:
                                         freeshow.send_reference(matched_ref, start_time, end_time, whisper_start, whisper_end, time.time())
                                     t_freeshow += time.time() - _t
+                                    logger.info(candidate_engine.log())
+                                    continue
 
-                            if ref_sent:
+                            # ── Engine decides ──
+                            candidate_engine.new_cycle()
+                            emit_ref = candidate_engine.decide()
+                            logger.info(candidate_engine.log())
+
+                            if emit_ref:
+                                session.last_reference = emit_ref.canonical
+                                logger.info("CANDIDATE ENGINE EMIT: %s", emit_ref.canonical)
+                                if emit_ref.verse is not None:
+                                    session.auto_advance = AutoAdvance(emit_ref.book, emit_ref.chapter, emit_ref.verse, emit_ref.end_verse or 999)
+                                    logger.info("Auto-advance started: %s %d:%d%s",
+                                        session.auto_advance.book, session.auto_advance.chapter,
+                                        session.auto_advance.current_verse,
+                                        f"-{emit_ref.end_verse}" if emit_ref.end_verse else "+")
+                                _t = time.time()
+                                resolved = sermon_context.process_input(corrected_text, emit_ref)
+                                t_sermon += time.time() - _t
+                                parser_end = time.time()
+                                if freeshow is not None:
+                                    freeshow.send_reference(resolved or emit_ref, start_time, end_time, whisper_start, whisper_end, parser_end)
+                                t_freeshow += time.time() - _t
                                 continue
 
+                            # ── Intent-based fallback: NAVIGATION ──
                             if confidence < config.min_confidence:
                                 continue
 
-                            if intent == "IGNORE":
-                                # ponytail: allow through when builder extended a range
-                                # (VAD-split "33 varaku" has no book → intent returns IGNORE)
-                                if not (builder.is_complete() and
-                                        builder.current_reference() and
-                                        builder.current_reference().canonical != session.last_reference):
-                                    continue
-                            elif intent == "NAVIGATION":
+                            if intent == "NAVIGATION":
                                 _t = time.time()
                                 resolved_reference = sermon_context.process_input(corrected_text, None)
                                 t_sermon += time.time() - _t
@@ -297,37 +300,6 @@ def main() -> int:
                                         freeshow.send_reference(resolved_reference, start_time, end_time, whisper_start, whisper_end, parser_end)
                                     t_freeshow += time.time() - _t
                                 continue
-                            elif intent not in ("REFERENCE", "CROSS_REFERENCE"):
-                                continue
-
-                            # REFERENCE / CROSS_REFERENCE or IGNORE with builder ref
-                            if not builder.is_complete():
-                                continue
-
-                            ref = builder.current_reference()
-                            if ref is None or ref.canonical == session.last_reference:
-                                continue
-
-                            session.last_reference = ref.canonical
-                            logger.info("DETECTED REFERENCE: %s", ref.canonical)
-
-                            if ref.verse is not None:
-                                session.auto_advance = AutoAdvance(ref.book, ref.chapter, ref.verse, ref.end_verse or 999)
-                                logger.info("Auto-advance started: %s %d:%d%s",
-                                    session.auto_advance.book, session.auto_advance.chapter,
-                                    session.auto_advance.current_verse,
-                                    f"-{ref.end_verse}" if ref.end_verse else "+")
-
-                            _t = time.time()
-                            resolved_reference = sermon_context.process_input(corrected_text, ref)
-                            t_sermon += time.time() - _t
-                            parser_end = time.time()
-
-                            if freeshow is not None:
-                                freeshow.send_reference(resolved_reference or ref, start_time, end_time, whisper_start, whisper_end, parser_end)
-                            t_freeshow += time.time() - _t
-
-                            continue
                         except Exception as exc:
                             logger.error("Error processing utterance: %s", exc, exc_info=True)
                         finally:

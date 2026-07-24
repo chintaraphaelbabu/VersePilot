@@ -55,6 +55,7 @@ class ReferenceBuilder:
         if not text or not text.strip():
             self._log_state()
             return
+        self.utterance_count += 1
 
         text = normalize_spoken_numbers(text)
         tokens = tokenize(text)
@@ -139,6 +140,8 @@ class ReferenceBuilder:
         self._pending_book_prefix: int | None = None
         self.last_reference_time: float = time.time()
         self.confidence: float = 0.0
+        self.last_book_alias: str | None = None
+        self.utterance_count: int = 0
 
     def _process_classified(self, classified: list[Token]) -> None:
         i = 0
@@ -206,6 +209,7 @@ class ReferenceBuilder:
             self._reset()
 
         self.book = book_canon
+        self.last_book_alias = tok.text
         self._pending_book_prefix = None
         self.last_reference_time = time.time()
         self.confidence = 0.6

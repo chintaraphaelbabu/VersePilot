@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "scanned_at": "2026-07-14T14:54:49.813Z",
+  "files": [
+    {
+      "path": ".venv/Lib/site-packages/_sounddevice_data/portaudio-binaries/README.md",
+      "title": "README.md",
+      "summary": "PortAudio binaries ================== This repository provides pre-compiled dynamic libraries for [PortAudio](http://www.portaudio.com/). DLLs for Windows (32-bit and 64-bit) ----------------------...",
+      "lines": 35,
+      "mtime": 1783604343547.7168
+    },
+    {
+      "path": "README.md",
+      "title": "Voice Bible",
+      "summary": "Voice Bible listens to a microphone, transcribes speech with Faster-Whisper, detects spoken intent, parses Bible references in English or Telugu, manages sermon context, and automatically displays ...",
+      "lines": 79,
+      "mtime": 1783673308496.5361
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "initTimestamp": "2026-07-24T15:03:58.395Z",
+  "warnings": [],
+  "errors": [],
+  "reclaimed": {
+    "removedBranches": [],
+    "removedWorktrees": [],
+    "prunedWorktrees": true
+  }
+}

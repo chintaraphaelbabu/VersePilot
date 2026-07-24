@@ -1,0 +1,4 @@
+# alias_suggestions.yaml
+# Auto-generated from replay timeline analysis.
+# Review and manually add high-confidence suggestions to books.py or normalizer.py.
+# Only includes candidates seen >=3 times, always mapping to the same canonical book.

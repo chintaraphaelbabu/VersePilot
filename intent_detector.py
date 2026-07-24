@@ -28,6 +28,9 @@ _raw_aliases.extend(k for k in _SINGLE_BOOK_MAP if k not in _raw_aliases)
 _raw_aliases = list(set(_raw_aliases))
 _raw_aliases.sort(key=len, reverse=True)
 
+# ponytail: words that falsely fuzzy-match book names
+FUZZY_STOPLIST = {"పాయింట్స్"}
+
 _aliases = [re.escape(a) for a in _raw_aliases]
 
 # Regex to match any book name/alias with custom boundaries
@@ -125,15 +128,20 @@ class IntentDetector:
 
         # 3. Fuzzy book match (only if no exact match and no navigation)
         if fuzz is not None:
-            for alias in _raw_aliases:
-                if len(alias) < 4:
-                    if re.search(_L_BOUND + re.escape(alias) + _R_BOUND, cleaned):
+            for token in cleaned.split():
+                if token in FUZZY_STOPLIST:
+                    continue
+                for alias in _raw_aliases:
+                    if len(alias) < 4:
+                        if re.search(_L_BOUND + re.escape(alias) + _R_BOUND, cleaned):
+                            has_book = True
+                            break
+                        continue
+                    score = fuzz.ratio(alias, token)
+                    if score >= 85:
                         has_book = True
                         break
-                    continue
-                score = fuzz.partial_ratio(alias, cleaned)
-                if score >= 85:
-                    has_book = True
+                if has_book:
                     break
 
         if has_book:

@@ -11,6 +11,9 @@ except ImportError:
 
 REPAIR_MARKERS = {"sorry", "no", "actually", "correction", "కాదు", "లేదు", "అంటే", "ఆ"}
 
+# ponytail: words that falsely fuzzy-match book names at ≥85%
+FUZZY_STOPLIST = {"పాయింట్స్"}
+
 
 class MutableBibleReference:
     def __init__(self) -> None:
@@ -98,6 +101,7 @@ class CorrectionEngine:
                 self.ref.book = matched_book
                 self.ref.chapter = None
                 self.ref.verse = None
+                self.ref.end_verse = None
                 self.ref.last_assigned = 'book'
                 self.should_repair = False
                 continue
@@ -127,7 +131,7 @@ class CorrectionEngine:
                 continue
 
             # If it's another word, check fuzzy book match
-            if fuzz is not None:
+            if fuzz is not None and token_lower not in FUZZY_STOPLIST:
                 best_score = 0
                 best_book = None
                 for entry in BOOKS:

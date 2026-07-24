@@ -1,66 +1,61 @@
-# improvements.yaml
-# Auto-generated from failure_report.md analysis (13-sermon batch replay).
-# Review manually before merging.
+duplicate_reference:
+  symptom: "end_verse concatenates with next number (Luke 18:18-10, Daniel 2:3-611, etc.)"
+  mechanism: "ReferenceBuilder accumulates trailing digits into end_verse or chapter without sanity-checking against bounds"
+  corpus_evidence:
+    - "Luke 18:18-10 (sermon 1)"
+    - "Daniel 2:3-611 (sermon 1)"
+    - "Revelation 48:4-29 (sermon 1)"
+    - "Daniel 18:2-22 (sermon 1)"
+  fix_hint: "Add chapter/verse max bounds check in ReferenceBuilder before committing end_verse"
+  priority: medium  # was low; promoted after root-cause analysis
+  status: open
 
-proposals:
+timeout_guard:
+  symptom: "Single bible_search request took 229 seconds"
+  mechanism: "No timeout guard on bible_search HTTP/SQL queries"
+  corpus_evidence:
+    - "unusually_long_processing: 229.14s (sermon 1)"
+  fix_hint: "Abort bible_search requests exceeding 60s"
+  priority: medium
+  status: open
 
-  # ── BUG: end_verse not reset on new book in CorrectionEngine ─────────
-  - phrase: "end_verse not reset on new BOOK token"
-    observed_count: 1
-    suggested_category: "correction_engine_bug"
-    confidence: 1.0
-    reason: >
-      When CorrectionEngine processes a second BOOK: token in the same
-      utterance, it sets chapter=None and verse=None but does NOT clear
-      end_verse. This causes the previous end_verse (16) to leak into the
-      output. Raw: "...మొదటి పేతురు 1 అధ్యాయము 13 నుంచి 16 వరకు... మొదటి పేతురు 1 అధ్యాయము"
-      → corrected "1 Peter 1 16" instead of "1 Peter 1 13 16".
-      Fix: add self.ref.end_verse = None in the BOOK: handler.
+ordinal_chapter_parsing:
+  symptom: "Chapter-in-words format not parsed (ఒకటవ అధ్యాయము = first chapter)"
+  mechanism: "Telugu ordinal numbers not supported by normalizer or preprocessor"
+  corpus_evidence:
+    - "navigation_failures: ఒకటవ అధ్యాయము 13 నుంచి 16 వరకు"
+  fix_hint: "Add Telugu ordinal mapping (ఒకటవ/రెండవ/మూడవ → 1/2/3) in normalizer preprocessor"
+  priority: low
+  status: open
 
-  # ── BibleSearch searches text buffer instead of built reference ──────
-  - phrase: "BibleSearch searches text buffer instead of built reference"
-    observed_count: 4
-    suggested_category: "code_architecture"
-    confidence: 1.0
-    reason: >
-      In segments 35 (Psalms 1:2), 69 (Daniel 3:12), 81 (John 3:2),
-      98 (Leviticus 11:45), the ReferenceBuilder correctly identified a
-      complete reference, but BibleSearch searched the accumulated text
-      buffer (hundreds of chars of garbage from prior segments) instead
-      of the built reference. When builder.state == COMPLETE or
-      builder.verse is set, pass the built reference directly to
-      BibleSearch instead of session.text_buffer.
+telugu_range_expression:
+  symptom: "Range expressions like '13 నుంచి 16' produce no reference"
+  mechanism: "Telugu range syntax నుంచి (nundi = from) not recognized by parser"
+  corpus_evidence:
+    - "navigation_failures: 13 నుంచి 16 3 వచనాల్లో"
+    - "builder_failures: multiple entries with standalone number tokens"
+  fix_hint: "Recognize <num> నుంచి <num> patterns and convert to n-m range syntax"
+  priority: low
+  status: open
 
-  # ── Intent detector false positives on long sermon text ──────────────
-  - phrase: "REFERENCE intent on utterance with no book name"
-    observed_count: 2
-    suggested_category: "intent_detector_tuning"
-    confidence: 0.85
-    reason: >
-      Two long utterances (segments 72, 97) with no Bible book name were
-      classified as REFERENCE (confidence 0.90). They contain sermon
-      exposition, not references. Consider raising REFERENCE threshold or
-      adding a "must contain book-like token" heuristic.
+cross_utterance_reference_tracking:
+  symptom: "Speaker mentions a reference earlier; verse-only mentions later produce no match"
+  mechanism: "No cross-utterance reference context carried across utterances"
+  corpus_evidence:
+    - "~10 builder_failures entries have partial verse text without citation"
+  fix_hint: "Carry previous reference context across utterances to resolve standalone verse/range mentions"
+  priority: low
+  status: open
 
-  # ── Fuzzy match hallucination: పాయింట్స్ → Psalms ───────────────────
-  - phrase: "పాయింట్స్ (points) fuzzy-matches to Psalms"
-    observed_count: 1
-    suggested_category: "missing_correction_word"
-    confidence: 0.95
-    reason: >
-      In segment 101, raw "10 11 పాయింట్స్" (10 11 points) was corrected
-      to "Psalms 10 11". The token "పాయింట్స్" fuzzy-matches a Psalms
-      alias at ≥85%. Add to normalizer IGNORE_WORDS or to a
-      correction_engine fuzzy-match blacklist. (Note: only 1 occurrence,
-      but the hallucination corrupts the output.)
-
-  # ── Chapter missing for "1 Peter" ────────────────────────────────────
-  - phrase: "1 Peter without chapter number"
-    observed_count: 1
-    suggested_category: "missing_correction_word"
-    confidence: 0.50
-    reason: >
-      Segment 43: correction extracted "1 Peter" from a long utterance but
-      the chapter number was not found in the same segment. The chapter
-      arrived in a later segment. This is a split-chunk timing issue, not
-      a missing alias. No data change needed unless it repeats.
+dead_code_removal:
+  symptom: "~223 lines of dead code across 6 files — never imported or unreachable"
+  mechanism: "Accumulated during development; no pruning pass done"
+  files:
+    - "confidence.py:185 — entire file never imported anywhere"
+    - "parser.py:116-135 — _fuzzy_score function, never called"
+    - "normalizer.py:429-431 — TeluguNormalizer class, never used"
+    - "sermon_context.py:95 — style_verse branch, dead"
+    - "speech_engine.py:24-27 — ABC with one implementation"
+  fix_hint: "Delete unreachable code; keep ABC if future implementations expected"
+  priority: high  # trivial effort, immediate clarity
+  status: open

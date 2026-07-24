@@ -52,8 +52,12 @@ _romanized_output.txt
 # All test files and output
 test_*.py
 test_out.txt
+test/
 
 # Replay evaluation (code + outputs)
 replay.py
 _batch_replay.py
 replay/
+
+#video
+video/

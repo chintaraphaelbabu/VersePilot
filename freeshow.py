@@ -22,44 +22,48 @@ def _reference_to_freeshow(reference: BibleReference) -> str:
     return ref_str
 
 
+def _print_latencies(start_time, end_time, whisper_start, whisper_end, parser_end, http_start, http_end):
+    speech_duration = end_time - start_time
+    whisper_latency = whisper_end - whisper_start
+    parser_latency = parser_end - whisper_end
+    http_latency = http_end - http_start
+    total_latency = http_end - end_time
+    print(f"Speech duration: {speech_duration:.2f} s")
+    print(f"Whisper: {whisper_latency:.2f} s")
+    print(f"Parser: {parser_latency * 1000:.0f} ms")
+    print(f"HTTP: {http_latency * 1000:.0f} ms")
+    print(f"Total: {total_latency:.2f} s")
+    print(f"Total latency: {total_latency:.2f} s")
+    print(f"Whisper latency: {whisper_latency:.2f} s")
+
+
 class FreeShowClient:
     def __init__(self, config: AppConfig) -> None:
         self.config = config
         self.logger = logging.getLogger("verses.freeshow")
         self.url = f"http://{config.freeshow_host}:{config.freeshow_port}"
-        self.queue: queue.Queue[tuple[BibleReference, float, float, float, float, float]] = queue.Queue()
+        self.queue: queue.Queue = queue.Queue()
         self.worker_thread = threading.Thread(target=self._worker, daemon=True)
         self.worker_thread.start()
 
-    def send_reference(
-        self,
-        reference: BibleReference,
-        start_time: float,
-        end_time: float,
-        whisper_start: float,
-        whisper_end: float,
-        parser_end: float
-    ) -> None:
-        self.queue.put((reference, start_time, end_time, whisper_start, whisper_end, parser_end))
+    def send_reference(self, reference: BibleReference, start_time: float, end_time: float, whisper_start: float, whisper_end: float, parser_end: float) -> None:
+        # ponytail: retries embedded in queue item to avoid blocking the caller
+        self.queue.put((reference, start_time, end_time, whisper_start, whisper_end, parser_end, 3))
 
     def _worker(self) -> None:
         while True:
             try:
-                reference, start_time, end_time, whisper_start, whisper_end, parser_end = self.queue.get()
-                self._send_now(reference, start_time, end_time, whisper_start, whisper_end, parser_end)
+                item = self.queue.get()
+                reference, start_time, end_time, whisper_start, whisper_end, parser_end = item[:6]
+                retries = item[6] if len(item) > 6 else 0
+                success = self._send_now(reference, start_time, end_time, whisper_start, whisper_end, parser_end)
+                if not success and retries > 0:
+                    self.queue.put((reference, start_time, end_time, whisper_start, whisper_end, parser_end, retries - 1))
                 self.queue.task_done()
             except Exception as exc:
                 self.logger.error("Error in FreeShow worker thread: %s", exc)
 
-    def _send_now(
-        self,
-        reference: BibleReference,
-        start_time: float,
-        end_time: float,
-        whisper_start: float,
-        whisper_end: float,
-        parser_end: float
-    ) -> None:
+    def _send_now(self, reference, start_time, end_time, whisper_start, whisper_end, parser_end) -> bool:
         http_start = time.time()
         try:
             payload = {
@@ -68,8 +72,9 @@ class FreeShowClient:
             }
         except ValueError as exc:
             self.logger.error("Error formatting reference: %s", exc)
-            return
+            return False
 
+        success = True
         try:
             response = requests.post(self.url, json=payload, timeout=5)
             http_end = time.time()
@@ -77,35 +82,28 @@ class FreeShowClient:
                 print("✓ Sent")
                 self.logger.info("Sent: %s", payload["reference"])
             else:
+                success = False
                 print("HTTP error")
                 print(f"Status Code: {response.status_code}")
                 print(f"Response Body:\n{response.text}")
                 self.logger.warning("HTTP error. Status code: %s", response.status_code)
         except requests.exceptions.ConnectionError:
             http_end = time.time()
+            success = False
             print("FreeShow is not running.")
             self.logger.warning("FreeShow is not running (connection refused).")
         except requests.exceptions.Timeout:
             http_end = time.time()
+            success = False
             print("HTTP error")
             print("Request timed out.")
             self.logger.warning("Request timed out.")
         except Exception as exc:
             http_end = time.time()
+            success = False
             print("HTTP error")
             print(f"Error: {exc}")
             self.logger.warning("Failed to send reference: %s", exc)
 
-        speech_duration = end_time - start_time
-        whisper_latency = whisper_end - whisper_start
-        parser_latency = parser_end - whisper_end
-        http_latency = http_end - http_start
-        total_latency = http_end - end_time
-
-        print(f"Speech duration: {speech_duration:.2f} s")
-        print(f"Whisper: {whisper_latency:.2f} s")
-        print(f"Parser: {parser_latency * 1000:.0f} ms")
-        print(f"HTTP: {http_latency * 1000:.0f} ms")
-        print(f"Total: {total_latency:.2f} s")
-        print(f"Total latency: {total_latency:.2f} s")
-        print(f"Whisper latency: {whisper_latency:.2f} s")
+        _print_latencies(start_time, end_time, whisper_start, whisper_end, parser_end, http_start, http_end)
+        return success

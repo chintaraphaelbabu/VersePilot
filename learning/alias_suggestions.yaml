@@ -1,0 +1,5 @@
+# alias_suggestions.yaml
+# Auto-generated from replay timeline analysis.
+# Unknown words that appear with >=2 different sermons and always
+# map to the same book.  Single-sermon-only words are rejected as noise.
+
