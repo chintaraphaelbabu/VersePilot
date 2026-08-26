@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "versepilot"
+version = "0.1.0"
+description = "Voice-controlled Bible reference detection for FreeShow"
+requires-python = ">=3.10"
+dependencies = [
+    "faster-whisper==1.1.1",
+    "sounddevice==0.5.2",
+    "numpy==2.5.1",
+    "rapidfuzz==3.13.0",
+    "webrtcvad==2.0.10",
+    "requests>=2.32.0",
+    "scipy>=1.16.0",
+    "SpeechRecognition>=3.14.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

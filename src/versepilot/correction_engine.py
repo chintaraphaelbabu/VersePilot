@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import re
-from books import BOOKS
-from spoken_numbers import normalize_spoken_numbers
+from .books import BOOKS
+from .spoken_numbers import normalize_spoken_numbers
 
 try:
     from rapidfuzz import fuzz

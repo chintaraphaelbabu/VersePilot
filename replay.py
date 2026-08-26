@@ -3,7 +3,8 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
 
-from versepilot.main import main
+from scripts.replay import *
+from scripts.replay import main
 
 
 if __name__ == "__main__":

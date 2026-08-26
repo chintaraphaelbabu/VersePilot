@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import dataclasses
 
-from auto_advance import AutoAdvance
+from .auto_advance import AutoAdvance
 
 
 SCOPE_RESET_TIMEOUT = 60.0

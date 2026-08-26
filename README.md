@@ -1,6 +1,6 @@
 # Voice Bible
 
-Voice Bible listens to a microphone, transcribes speech with Faster-Whisper, detects spoken intent, parses Bible references in English or Telugu, manages sermon context, and automatically displays them in FreeShow using its official REST API.
+Voice Bible listens to a microphone, transcribes speech locally with Faster-Whisper, detects spoken intent, parses Bible references in English or Telugu, manages sermon context, and automatically displays them in FreeShow using its official REST API.
 
 ## Features
 
@@ -49,6 +49,26 @@ Run the listener using your microphone index (e.g., `--mic 1`) and latency profi
 ```bash
 python main.py --mic 1 --mode FAST
 ```
+
+### 3. Train from sermon recordings
+Download sermon audio with `sermon_files\download.bat`, or place `.mp3`, `.wav`, `.flac`, or `.m4a` files in `sermon_files\video\`. Then run:
+
+```bash
+python replay.py --dataset sermon_files/video --language telugu
+python learning_pipeline.py
+```
+
+Generated replay reports are stored in `outputs\replay\`; learning suggestions are stored in `outputs\learning\`. Maintenance scripts are in `scripts\maintenance\`.
+
+## Project structure
+
+- `src\versepilot\` - application package and Bible data
+- `scripts\` - replay, learning, and maintenance commands
+- `tests\` - regression tests
+- `sermon_files\video\` - downloaded sermon audio
+- `outputs\` - generated replay and learning reports
+
+Audio stays on this computer while the application is running. Faster-Whisper may download a model once if it is not already cached; after that, live transcription and replay run locally. Training reports use downloaded sermon recordings but do not fine-tune the Whisper model.
 
 ---
 

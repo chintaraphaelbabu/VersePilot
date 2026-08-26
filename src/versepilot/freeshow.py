@@ -6,9 +6,9 @@ import threading
 import time
 import requests
 
-from book_ids import BOOK_IDS
-from config import AppConfig
-from parser import BibleReference
+from .book_ids import BOOK_IDS
+from .config import AppConfig
+from .parser import BibleReference
 
 
 def _reference_to_freeshow(reference: BibleReference) -> str:

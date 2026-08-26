@@ -44,20 +44,21 @@ freeshow_app/
 requir.txt
 telugu_bible.json
 
-# Experimental / ad-hoc scripts (not part of the test suite)
-_build_corpus.py
-_gen_romanized.py
-_romanized_output.txt
+# Generated scratch output from maintenance tools
+scripts/maintenance/_romanized_output.txt
 
-# All test files and output
-test_*.py
+# Test caches and temporary output
+__pycache__/
+.pytest_cache/
 test_out.txt
 test/
 
-# Replay evaluation (code + outputs)
-replay.py
-_batch_replay.py
-replay/
+# Generated replay and learning outputs
+outputs/replay/
+outputs/learning/
 
-#video
+# Downloaded sermon media
 video/
+sermon_files/video/
+sermon_files/archive/
+sermon_files/downloaded.txt

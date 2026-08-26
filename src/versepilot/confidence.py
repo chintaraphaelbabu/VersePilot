@@ -4,7 +4,7 @@ import logging
 from dataclasses import dataclass, field
 from typing import NamedTuple
 
-import books
+from . import books
 
 logger = logging.getLogger("verses.confidence")
 
@@ -64,7 +64,7 @@ def _num_score(value: int, raw: str | None) -> tuple[float, list[str]]:
         reasons.append(f"exact {raw}")
         return 1.00, reasons
     if raw is not None:
-        from spoken_numbers import NUMBER_WORDS
+        from .spoken_numbers import NUMBER_WORDS
         if raw.lower() in NUMBER_WORDS:
             reasons.append(f"spoken number ({raw})")
             return 0.95, reasons

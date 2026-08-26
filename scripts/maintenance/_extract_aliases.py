@@ -10,11 +10,15 @@ import json
 import os
 import re
 from collections import defaultdict
+from pathlib import Path
+import sys
 
-from normalizer import _single_book_lookup, ROMANIZED_LOOKUP, IGNORE_WORDS
-from books import BOOKS
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
-REPLAY_DIR = "replay"
+from versepilot.normalizer import _single_book_lookup, ROMANIZED_LOOKUP, IGNORE_WORDS
+from versepilot.books import BOOKS
+
+REPLAY_DIR = "outputs/replay"
 
 _WORD_RE = re.compile(r"[a-zA-Z\u0C00-\u0C7F]{3,}")
 

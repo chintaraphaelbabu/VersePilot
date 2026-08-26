@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import re
-from books import BOOKS
-from normalizer import _SINGLE_BOOK_MAP
-from spoken_numbers import normalize_spoken_numbers, NUMBER_WORDS
+from .books import BOOKS
+from .normalizer import _SINGLE_BOOK_MAP
+from .spoken_numbers import normalize_spoken_numbers, NUMBER_WORDS
 
 try:
     from rapidfuzz import fuzz

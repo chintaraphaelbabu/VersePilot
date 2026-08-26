@@ -44,7 +44,7 @@ class SearchResult(NamedTuple):
 class BibleSearch:
     def __init__(self, bible_path: str | None = None) -> None:
         if bible_path is None:
-            bible_path = os.path.join(os.path.dirname(__file__), "telugu_bible.json")
+            bible_path = os.path.join(os.path.dirname(__file__), "data", "telugu_bible.json")
         self._verses: list[VerseInfo] = []
         self._by_book_chapter: dict[tuple[str, int], list[VerseInfo]] = {}
         self._by_chapter_verse: dict[tuple[str, int, int], VerseInfo] = {}

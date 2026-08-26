@@ -10,7 +10,7 @@ import os
 import re
 from collections import defaultdict
 
-REPLAY_DIR = "replay"
+REPLAY_DIR = "outputs/replay"
 
 _WORD_RE = re.compile(r"[a-zA-Z\u0C00-\u0C7F]{3,}")
 

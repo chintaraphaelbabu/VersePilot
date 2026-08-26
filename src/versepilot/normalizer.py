@@ -2,8 +2,8 @@ from __future__ import annotations
 import re
 from typing import Any, NamedTuple
 
-from books import BOOKS
-from spoken_numbers import normalize_spoken_numbers, NUMBER_WORDS, DIGIT_ORD_PATTERN
+from .books import BOOKS
+from .spoken_numbers import normalize_spoken_numbers, NUMBER_WORDS, DIGIT_ORD_PATTERN
 
 
 class Token(NamedTuple):

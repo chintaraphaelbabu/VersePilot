@@ -9,8 +9,8 @@ try:
 except Exception:  # pragma: no cover - optional dependency fallback
     fuzz = None
 
-from books import BOOKS, BookEntry
-from spoken_numbers import normalize_spoken_numbers
+from .books import BOOKS, BookEntry
+from .spoken_numbers import normalize_spoken_numbers
 
 
 @dataclass(frozen=True)
@@ -48,7 +48,7 @@ class BibleReferenceParser:
         return reference
 
     def _normalize(self, text: str) -> str:
-        from normalizer import normalize_telugu_bible_reference
+        from .normalizer import normalize_telugu_bible_reference
         text = normalize_telugu_bible_reference(text)
         text = normalize_spoken_numbers(text)
         text = text.lower()

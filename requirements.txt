@@ -5,3 +5,4 @@ rapidfuzz==3.13.0
 webrtcvad==2.0.10
 requests>=2.32.0
 scipy>=1.16.0
+SpeechRecognition>=3.14.0

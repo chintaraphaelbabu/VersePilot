@@ -13,7 +13,7 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any
 
-from parser import BibleReference
+from .parser import BibleReference
 
 logger = logging.getLogger("verses.candidate_engine")
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 
-from parser import BibleReference
+from .parser import BibleReference
 
 logger = logging.getLogger("verses")
 

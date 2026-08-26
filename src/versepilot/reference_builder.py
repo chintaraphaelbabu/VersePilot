@@ -6,9 +6,9 @@ import time
 from enum import Enum, auto
 from typing import Any
 
-from normalizer import tokenize, classify, Token, normalize_spoken_numbers
-from normalizer import _NUMBERED_BASE, _single_book_lookup
-from parser import BibleReference
+from .normalizer import tokenize, classify, Token, normalize_spoken_numbers
+from .normalizer import _NUMBERED_BASE, _single_book_lookup
+from .parser import BibleReference
 
 
 logger = logging.getLogger("verses.reference_builder")

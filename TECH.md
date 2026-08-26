@@ -2,34 +2,23 @@
 
 ## Overview
 
-Verses listens to a church audio feed, transcribes Telugu/English speech via Google Speech-to-Text, extracts Bible references (e.g. "కీర్తనలు 25:14" or "aadikaandamu 1 1"), and sends them to FreeShow for display. It also has auto-Bible-text-matching: when the reader recites verse text, the system fuzzy-matches against a local Telugu Bible database to identify the reference. A ReferenceBuilder state machine accumulates reference info across utterances, tolerating filler words like "మనమందరము" and "తెరిచినట్లయితే".
+Verses listens to a church audio feed, transcribes Telugu/English speech locally with Faster-Whisper, extracts Bible references (e.g. "కీర్తనలు 25:14" or "aadikaandamu 1 1"), and sends them to FreeShow for display. It also has auto-Bible-text-matching: when the reader recites verse text, the system fuzzy-matches against a local Telugu Bible database to identify the reference. A ReferenceBuilder state machine accumulates reference info across utterances, tolerating filler words like "మనమందరము" and "తెరిచినట్లయితే".
 
 ---
 
 ## File Structure
 
 ```
-verses/
-  main.py                — Entry point, main loop, audio capture, flow orchestration
-  reference_builder.py   — State machine for cross-utterance reference accumulation
-  bible_search.py        — Telugu Bible fuzzy search engine (rapidfuzz)
-  mic.py                 — Microphone selection, VAD, audio segmentation
-  speech_engine.py       — Abstract SpeechEngine base + GoogleSpeechEngine (Google STT)
-  session.py             — SermonSession dataclass, shared state
-  parser.py              — BibleReference dataclass + BibleReferenceParser (fallback)
-  normalizer.py          — Telugu reference normalizer, book alias maps, ROMANIZED_LOOKUP
-  correction_engine.py   — Utterance correction with book/number extraction
-  intent_detector.py     — Classifies speech as REFERENCE, NAVIGATION, IGNORE, CROSS_REFERENCE
-  sermon_context.py      — Tracks context state (current passage, navigation)
-  freeshow.py            — Async HTTP client for FreeShow API (port 5506)
-  config.py              — AppConfig dataclass + env-var loading
-  utils.py               — Logging setup
-  books.py               — All 66 Bible book entries with Telugu/English aliases
-  book_ids.py            — Book name → FreeShow numeric ID mapping
-  spoken_numbers.py      — Telugu/English number word → digit normalization
-  telugu_bible.json      — 31,101 Telugu Bible (BSI) verses in JSON format
-  auto_advance.py        — Auto-advance logic for verse ranges
-  church_corpus.yaml     — 488 sermon utterance test cases
+VersePilot/
+   src/versepilot/         — Application package
+   src/versepilot/data/    — Telugu Bible database
+   scripts/                — Replay, learning, and maintenance commands
+   scripts/maintenance/    — One-off corpus and report utilities
+   tests/                  — Regression tests
+   data/                   — Corpus and learning configuration
+   sermon_files/video/     — Downloaded sermon audio
+   outputs/replay/         — Generated replay artifacts
+   outputs/learning/       — Generated learning reports
 ```
 
 ---
@@ -68,7 +57,7 @@ for item in stream.iter_segments():
 
 **Speech branch** (`item` is `(audio, start_time, end_time)`):
 
-1. **Transcribe** via `GoogleSpeechEngine.transcribe()` — Google STT, Telugu first, English fallback. Retries once on empty result.
+1. **Transcribe** via `LocalWhisperEngine.transcribe()` — local Faster-Whisper using the selected language and mode. Retries once on empty result.
 2. **Auto-advance check** — If auto-advance is active and reader pauses 3s+ with enough segments → advance to next verse
 3. **Correction** — Run `CorrectionEngine.process_utterance()` to detect/repair corrections
 4. **Intent detection** — `IntentDetector.detect()` classifies speech as REFERENCE/NAVIGATION/CROSS_REFERENCE/IGNORE
@@ -152,13 +141,13 @@ Segmentation parameters (all from config):
 
 ### `speech_engine.py`
 
-`GoogleSpeechEngine` — Google Web Speech API STT.
+`LocalWhisperEngine` — Faster-Whisper STT running on the local CPU or CUDA device.
 
-1. Writes float32 audio to temp WAV
-2. Calls `recognize_google(audio, language="te-IN")` (Telugu)
-3. On empty/failure, falls back to `recognize_google(audio, language="en-US")`
+1. Loads the configured model (`small`, `medium`, or another Faster-Whisper model)
+2. Transcribes the in-memory audio array locally
+3. Uses the selected language and mode beam size
 
-**Caveat**: Requires internet. Free tier: 60 req/min. No local fallback.
+`GoogleSpeechEngine` remains as a legacy optional class, but the live application and replay pipeline use `LocalWhisperEngine` by default.
 
 ---
 

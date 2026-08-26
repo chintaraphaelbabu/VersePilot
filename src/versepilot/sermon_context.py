@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import re
 import time
-from parser import BibleReference
+from .parser import BibleReference
 
 
 def clean_text(text: str) -> str:
-    from spoken_numbers import normalize_spoken_numbers
+    from .spoken_numbers import normalize_spoken_numbers
     text = normalize_spoken_numbers(text)
     text = text.lower()
     text = re.sub(r"[^\w\s\u0C00-\u0C7F]", " ", text)

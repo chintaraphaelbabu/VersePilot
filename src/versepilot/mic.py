@@ -12,9 +12,9 @@ from dataclasses import dataclass
 
 import numpy as np
 import sounddevice as sd
-from scipy.signal import resample_poly
+from scipy.signal import butter, resample_poly, sosfilt, stft, istft
 
-from config import AppConfig
+from .config import AppConfig
 
 
 @dataclass(frozen=True)
@@ -43,6 +43,43 @@ class _EnergyVad:
         audio /= 32768.0
         rms = float(np.sqrt(np.mean(np.square(audio))))
         return rms > 0.006
+
+
+def enhance_audio(audio: np.ndarray, sample_rate: int) -> np.ndarray:
+    """Prepare segmented microphone audio for speech recognition."""
+    samples = np.asarray(audio, dtype=np.float32)
+    if samples.size == 0:
+        return samples
+
+    samples = samples - float(np.mean(samples))
+    highpass = butter(2, 80, btype="highpass", fs=sample_rate, output="sos")
+    samples = sosfilt(highpass, samples).astype(np.float32)
+
+    if samples.size >= sample_rate // 4:
+        _, _, spectrum = stft(
+            samples,
+            fs=sample_rate,
+            nperseg=min(512, samples.size),
+            noverlap=min(384, samples.size // 2),
+            boundary="zeros",
+        )
+        noise_frames = max(1, spectrum.shape[1] // 8)
+        noise_power = np.median(np.abs(spectrum[:, :noise_frames]) ** 2, axis=1, keepdims=True)
+        power = np.abs(spectrum) ** 2
+        gain = np.sqrt(np.maximum(power - 1.5 * noise_power, 0.12 * power) / np.maximum(power, 1e-10))
+        _, cleaned = istft(
+            spectrum * gain,
+            fs=sample_rate,
+            nperseg=min(512, samples.size),
+            noverlap=min(384, samples.size // 2),
+            input_onesided=True,
+        )
+        samples = cleaned[: samples.size].astype(np.float32)
+
+    peak = float(np.max(np.abs(samples)))
+    if peak > 0.98:
+        samples *= 0.98 / peak
+    return np.ascontiguousarray(samples, dtype=np.float32)
 
 
 class MicrophoneSelector:
@@ -305,6 +342,7 @@ class VoiceSegmentStream:
     def _flush_triggered_frames(self) -> None:
         if len(self.triggered_frames) >= self.min_speech_frames:
             utterance = np.concatenate(self.triggered_frames).astype(np.float32)
+            utterance = enhance_audio(utterance, self.capture_sample_rate)
             utterance = self._resample_to_whisper_rate(utterance)
             speech_end_time = time.time()
             self.queue.put((utterance, getattr(self, "speech_start_time", speech_end_time), speech_end_time))
