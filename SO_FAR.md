@@ -25,12 +25,17 @@ This file records completed features and how they were applied.
 ### FreeShow integration
 - Sends resolved references to FreeShow asynchronously through its local REST endpoint.
 
+### Continuous local Whisper context
+- Passes a bounded rolling prompt from recent recognized speech into the next local Whisper call.
+- Uses deterministic decoding and no-speech/compression filters for steadier livestream transcription.
+- Clears the prompt after prolonged silence so a new sermon section starts cleanly.
+- Validated with compilation, all 5 regression tests, and a focused context-reset check.
+
 ### Live diagnostics GUI
 - Added a local GUI monitor showing raw speech, corrected text, intent, builder state, candidate decisions, confidence, and diagnostics.
 
 ## In Progress
 
 ### YouTube-style local captions
-- Add rolling local Whisper context across speech chunks.
 - Add stabilized live caption text in the GUI.
 - Add reference-aware confirmation so uncertain numbers are held before sending.

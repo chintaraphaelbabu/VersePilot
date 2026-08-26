@@ -31,6 +31,7 @@ class SpeechEngine(ABC):
 class LocalWhisperEngine(SpeechEngine):
     def __init__(self, config: AppConfig) -> None:
         self.config = config
+        self.context_text = ""
         model_name = config.whisper_model_name or "small"
         logger.info("Loading local Whisper model: %s (%s, %s)", model_name, config.device, config.compute_type)
         self.model = WhisperModel(
@@ -50,6 +51,10 @@ class LocalWhisperEngine(SpeechEngine):
             beam_size=beam_size,
             vad_filter=False,
             condition_on_previous_text=False,
+            initial_prompt=self.context_text or None,
+            temperature=0.0,
+            no_speech_threshold=0.6,
+            compression_ratio_threshold=2.4,
         )
         segment_list = list(segments)
         text = " ".join(segment.text.strip() for segment in segment_list if segment.text.strip())
@@ -57,11 +62,16 @@ class LocalWhisperEngine(SpeechEngine):
         confidence = None
         if probabilities:
             confidence = float(np.mean([min(1.0, max(0.0, np.exp(value))) for value in probabilities]))
+        if text:
+            self.context_text = f"{self.context_text} {text}".strip()[-400:]
         return TranscriptionResult(
             text=text.strip(),
             language=getattr(info, "language", None),
             average_confidence=confidence,
         )
+
+    def reset_context(self) -> None:
+        self.context_text = ""
 
 
 class GoogleSpeechEngine(SpeechEngine):

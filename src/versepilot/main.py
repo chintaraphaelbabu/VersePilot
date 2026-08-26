@@ -156,6 +156,8 @@ def main() -> int:
                                 logger.info("Resetting search scope (timeout)")
                                 session.search_scope = None
                                 session.text_buffer = ""
+                                if hasattr(engine, "reset_context"):
+                                    engine.reset_context()
                             continue
 
                         audio, start_time, end_time = item
