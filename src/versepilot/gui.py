@@ -24,6 +24,9 @@ class ListenerWindow:
         self.builder = tk.StringVar(value="Waiting for a Bible reference")
         self.candidate = tk.StringVar(value="-")
         self.connection = tk.StringVar(value="Stopped")
+        self.current_reference = tk.StringVar(value="Waiting for a reference")
+        self.confidence = tk.StringVar(value="--")
+        self.event_count = tk.IntVar(value=0)
         self._build_layout()
         self.root.protocol("WM_DELETE_WINDOW", self.close)
         self.root.after(100, self._drain_events)
@@ -31,45 +34,101 @@ class ListenerWindow:
 
     def _build_layout(self) -> None:
         self.root.title("VersePilot - Live Reference Monitor")
-        self.root.geometry("900x650")
-        self.root.minsize(700, 500)
+        self.root.geometry("1080x760")
+        self.root.minsize(820, 600)
+        self.root.configure(background="#0D141B")
 
-        style = ttk.Style(self.root)
-        style.configure("Title.TLabel", font=("Segoe UI", 18, "bold"))
-        style.configure("Stage.TLabel", font=("Segoe UI", 11, "bold"))
-        style.configure("Value.TLabel", font=("Segoe UI", 12))
+        colors = {
+            "bg": "#0D141B", "panel": "#151F28", "panel_alt": "#1B2833",
+            "line": "#2A3A47", "text": "#E7EEF2", "muted": "#91A4AF",
+            "teal": "#4DD4C6", "amber": "#F2B96B", "red": "#F07F7F",
+        }
+        self.colors = colors
 
-        frame = ttk.Frame(self.root, padding=18)
-        frame.pack(fill=tk.BOTH, expand=True)
-        ttk.Label(frame, text="VersePilot Live Monitor", style="Title.TLabel").pack(anchor="w")
-        ttk.Label(frame, textvariable=self.connection).pack(anchor="w", pady=(3, 14))
+        outer = tk.Frame(self.root, bg=colors["bg"])
+        outer.pack(fill=tk.BOTH, expand=True, padx=28, pady=24)
 
-        stages = ttk.LabelFrame(frame, text="Reference being built", padding=12)
-        stages.pack(fill=tk.X)
-        self._stage(stages, "1. Heard", self.raw_text)
-        self._stage(stages, "2. Corrected", self.corrected_text)
-        self._stage(stages, "3. Intent", self.intent)
-        self._stage(stages, "4. Builder", self.builder)
-        self._stage(stages, "5. Candidate", self.candidate)
+        header = tk.Frame(outer, bg=colors["bg"])
+        header.pack(fill=tk.X, pady=(0, 22))
+        tk.Label(header, text="VERSEPILOT", bg=colors["bg"], fg=colors["teal"],
+                 font=("Segoe UI", 11, "bold")).pack(anchor="w")
+        tk.Label(header, text="Live reference monitor", bg=colors["bg"], fg=colors["text"],
+                 font=("Segoe UI", 24, "bold")).pack(anchor="w", pady=(3, 0))
+        status = tk.Frame(header, bg=colors["bg"])
+        status.pack(anchor="e", side=tk.RIGHT, pady=(8, 0))
+        self.status_dot = tk.Label(status, text="●", bg=colors["bg"], fg=colors["amber"],
+                                   font=("Segoe UI", 14))
+        self.status_dot.pack(side=tk.LEFT, padx=(0, 7))
+        tk.Label(status, textvariable=self.connection, bg=colors["bg"], fg=colors["muted"],
+                 font=("Segoe UI", 10)).pack(side=tk.LEFT)
 
-        log_frame = ttk.LabelFrame(frame, text="Live diagnostic log", padding=8)
-        log_frame.pack(fill=tk.BOTH, expand=True, pady=(14, 0))
+        hero = tk.Frame(outer, bg=colors["panel"], highlightbackground=colors["line"], highlightthickness=1)
+        hero.pack(fill=tk.X, pady=(0, 18))
+        hero_left = tk.Frame(hero, bg=colors["panel"])
+        hero_left.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=22, pady=18)
+        tk.Label(hero_left, text="CURRENT REFERENCE", bg=colors["panel"], fg=colors["muted"],
+                 font=("Segoe UI", 9, "bold")).pack(anchor="w")
+        tk.Label(hero_left, textvariable=self.current_reference, bg=colors["panel"], fg=colors["text"],
+                 font=("Segoe UI", 25, "bold"), anchor="w").pack(anchor="w", pady=(5, 0))
+        tk.Label(hero_left, text="The pipeline will only send a reference after it is resolved.",
+                 bg=colors["panel"], fg=colors["muted"], font=("Segoe UI", 9)).pack(anchor="w", pady=(4, 0))
+        metric = tk.Frame(hero, bg=colors["panel_alt"], width=170)
+        metric.pack(side=tk.RIGHT, fill=tk.Y)
+        metric.pack_propagate(False)
+        tk.Label(metric, text="CONFIDENCE", bg=colors["panel_alt"], fg=colors["muted"],
+                 font=("Segoe UI", 8, "bold")).pack(anchor="w", padx=18, pady=(20, 4))
+        tk.Label(metric, textvariable=self.confidence, bg=colors["panel_alt"], fg=colors["teal"],
+                 font=("Segoe UI", 22, "bold")).pack(anchor="w", padx=18)
+
+        content = tk.Frame(outer, bg=colors["bg"])
+        content.pack(fill=tk.BOTH, expand=True)
+        stages = tk.Frame(content, bg=colors["panel"], highlightbackground=colors["line"], highlightthickness=1)
+        stages.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 12))
+        tk.Label(stages, text="PROCESSING PIPELINE", bg=colors["panel"], fg=colors["muted"],
+                 font=("Segoe UI", 9, "bold")).pack(anchor="w", padx=18, pady=(16, 8))
+        self._stage(stages, "01", "Heard from stream", self.raw_text)
+        self._stage(stages, "02", "Corrected", self.corrected_text)
+        self._stage(stages, "03", "Intent", self.intent)
+        self._stage(stages, "04", "Reference builder", self.builder)
+        self._stage(stages, "05", "Candidate decision", self.candidate)
+
+        log_frame = tk.Frame(content, bg=colors["panel"], highlightbackground=colors["line"], highlightthickness=1, width=430)
+        log_frame.pack(side=tk.RIGHT, fill=tk.BOTH)
+        log_frame.pack_propagate(False)
+        log_header = tk.Frame(log_frame, bg=colors["panel"])
+        log_header.pack(fill=tk.X, padx=16, pady=(16, 8))
+        tk.Label(log_header, text="DIAGNOSTICS", bg=colors["panel"], fg=colors["muted"],
+                 font=("Segoe UI", 9, "bold")).pack(side=tk.LEFT)
+        tk.Label(log_header, textvariable=self.event_count, bg=colors["panel"], fg=colors["teal"],
+                 font=("Segoe UI", 9, "bold")).pack(side=tk.RIGHT)
         self.log = tk.Text(log_frame, height=16, wrap=tk.WORD, state=tk.DISABLED,
-                           font=("Consolas", 9), background="#101820", foreground="#D7E3EA")
+                           relief=tk.FLAT, borderwidth=0, padx=12, pady=8,
+                           font=("Consolas", 9), background="#101820", foreground="#D7E3EA",
+                           insertbackground=colors["text"])
         scrollbar = ttk.Scrollbar(log_frame, orient=tk.VERTICAL, command=self.log.yview)
         self.log.configure(yscrollcommand=scrollbar.set)
-        self.log.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.log.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(10, 0), pady=(0, 10))
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y, pady=(0, 10), padx=(0, 10))
 
-        ttk.Button(frame, text="Stop listener", command=self.stop_listener).pack(anchor="e", pady=(10, 0))
+        footer = tk.Frame(outer, bg=colors["bg"])
+        footer.pack(fill=tk.X, pady=(16, 0))
+        tk.Label(footer, text="Local Faster-Whisper  •  One listener  •  FreeShow output", bg=colors["bg"],
+                 fg=colors["muted"], font=("Segoe UI", 9)).pack(side=tk.LEFT)
+        tk.Button(footer, text="Stop listener", command=self.stop_listener, relief=tk.FLAT,
+                  bg=colors["red"], fg="#201215", activebackground="#FF9A9A", activeforeground="#201215",
+                  font=("Segoe UI", 9, "bold"), padx=14, pady=7, cursor="hand2").pack(side=tk.RIGHT)
 
-    def _stage(self, parent: ttk.LabelFrame, title: str, value: tk.StringVar) -> None:
-        row = ttk.Frame(parent)
-        row.pack(fill=tk.X, pady=3)
-        ttk.Label(row, text=title, width=16, style="Stage.TLabel").pack(side=tk.LEFT, anchor="n")
-        ttk.Label(row, textvariable=value, style="Value.TLabel", wraplength=680).pack(
-            side=tk.LEFT, fill=tk.X, expand=True, anchor="w"
-        )
+    def _stage(self, parent: tk.Frame, number: str, title: str, value: tk.StringVar) -> None:
+        row = tk.Frame(parent, bg=self.colors["panel"])
+        row.pack(fill=tk.X, padx=16, pady=5)
+        tk.Label(row, text=number, width=4, bg=self.colors["panel_alt"], fg=self.colors["teal"],
+                 font=("Consolas", 9, "bold"), pady=8).pack(side=tk.LEFT, anchor="n")
+        detail = tk.Frame(row, bg=self.colors["panel"])
+        detail.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(12, 0))
+        tk.Label(detail, text=title, bg=self.colors["panel"], fg=self.colors["muted"],
+                 font=("Segoe UI", 8, "bold")).pack(anchor="w")
+        tk.Label(detail, textvariable=value, bg=self.colors["panel"], fg=self.colors["text"],
+                 font=("Segoe UI", 10), wraplength=480, justify=tk.LEFT, anchor="w").pack(anchor="w", pady=(2, 5))
 
     def _start_listener(self) -> None:
         command = [sys.executable, str(self.project_root / "main.py"), *self.listener_args]
@@ -108,6 +167,7 @@ class ListenerWindow:
             self.root.after(100, self._drain_events)
 
     def _apply_line(self, line: str) -> None:
+        self.event_count.set(self.event_count.get() + 1)
         self.log.configure(state=tk.NORMAL)
         self.log.insert(tk.END, line + "\n")
         self.log.see(tk.END)
@@ -131,14 +191,29 @@ class ListenerWindow:
             self.builder.set(
                 f"{state} | {book} {chapter}:{verse}-{end_verse} | confidence {confidence}"
             )
+            self.confidence.set(confidence)
+            if book not in {"None", "-"} and chapter not in {"None", "-"}:
+                reference = f"{book} {chapter}"
+                if verse not in {"None", "-"}:
+                    reference += f":{verse}"
+                    if end_verse not in {"None", "-"}:
+                        reference += f"-{end_verse}"
+                self.current_reference.set(reference)
         match = re.search(r"CandidateEngine cycle .*", line)
         if match:
             self.candidate.set(match.group(0))
         match = re.search(r"(CANDIDATE ENGINE EMIT|TEXT MATCH|Sending chapter-only ref|Navigation):?\s*(.*)", line)
         if match:
             self.candidate.set(f"{match.group(1)} {match.group(2)}".strip())
+            emitted = match.group(2).strip()
+            if emitted:
+                self.current_reference.set(emitted)
         if "Error" in line or "error" in line or "WARNING" in line:
             self.connection.set("Running - inspect diagnostic log")
+            self.status_dot.configure(fg=self.colors["amber"])
+        elif "Listening on microphone" in line or "Local Whisper model ready" in line:
+            self.connection.set("Listening locally")
+            self.status_dot.configure(fg=self.colors["teal"])
 
     def stop_listener(self) -> None:
         if self.process is not None and self.process.poll() is None:
