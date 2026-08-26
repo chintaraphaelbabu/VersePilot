@@ -33,6 +33,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--mode", choices=["FAST", "BALANCED", "ACCURATE", "fast", "balanced", "accurate"], help="Whisper latency mode")
     parser.add_argument("--language", choices=["AUTO", "ENGLISH", "TELUGU", "auto", "english", "telugu"], default="AUTO", help="Language mode (AUTO, ENGLISH, TELUGU)")
     parser.add_argument("--dry-run", action="store_true", help="Do not send references to FreeShow")
+    parser.add_argument("--gui", action="store_true", help="Show the live diagnostic monitor")
     return parser.parse_args()
 
 
@@ -58,6 +59,11 @@ def choose_microphone(selector: MicrophoneSelector, mic_index: int | None) -> Re
 
 def main() -> int:
     args = parse_args()
+    if args.gui:
+        from .gui import run_gui
+        listener_args = [value for value in sys.argv[1:] if value != "--gui"]
+        return run_gui(listener_args)
+
     config = load_config()
 
     if args.mode:

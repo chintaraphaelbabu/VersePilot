@@ -29,6 +29,8 @@ VersePilot/
 
 The orchestrator. Runs the infinite event loop with VAD segmentation.
 
+`--gui` starts `gui.py`, a local Tk desktop monitor that supervises one listener process and renders its existing diagnostic logs. It does not create a second audio pipeline.
+
 #### Configuration (all in `config.py`)
 
 All tunable parameters are in `AppConfig`, loaded via `load_config()`. Env-var overrides listed below.

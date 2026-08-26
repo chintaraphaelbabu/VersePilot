@@ -50,6 +50,14 @@ Run the listener using your microphone index (e.g., `--mic 1`) and latency profi
 python main.py --mic 1 --mode FAST
 ```
 
+To watch every recognition stage in a local desktop window:
+
+```bash
+python main.py --gui --mic 3 --language TELUGU --mode FAST
+```
+
+The monitor shows the raw transcription, corrected text, detected intent, partial reference-builder state, candidate scores, and the diagnostic log. Use the **Stop listener** button to end the listener.
+
 ### 3. Train from sermon recordings
 Download sermon audio with `sermon_files\download.bat`, or place `.mp3`, `.wav`, `.flac`, or `.m4a` files in `sermon_files\video\`. Then run:
 
