@@ -176,6 +176,10 @@ class ListenerWindow:
         match = re.search(r"Heard raw: (.*)", line)
         if match:
             self.raw_text.set(match.group(1))
+        elif "Processing audio with duration" in line:
+            self.raw_text.set("Audio captured - transcribing locally...")
+            self.connection.set("Transcribing locally")
+            self.status_dot.configure(fg=self.colors["teal"])
         match = re.search(r"Heard corrected: (.*)", line)
         if match:
             self.corrected_text.set(match.group(1))
