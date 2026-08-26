@@ -40,7 +40,7 @@ def load_config() -> AppConfig:
     if mode_upper == "FAST":
         default_model = "small"
     elif mode_upper == "ACCURATE":
-        default_model = "medium"
+        default_model = "large-v3"
     else:
         default_model = "medium"
 

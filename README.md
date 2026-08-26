@@ -20,7 +20,7 @@ Voice Bible listens to a microphone, transcribes speech locally with Faster-Whis
 - **Configurable Whisper Latency Modes**:
   - `FAST`: Uses the `small` model with `beam_size = 1`.
   - `BALANCED`: Uses the `small` model with `beam_size = 3`.
-  - `ACCURATE`: Uses the `medium` model with `beam_size = 5`.
+  - `ACCURATE`: Uses the `large-v3` model with `beam_size = 5`.
 
 ---
 
@@ -49,6 +49,8 @@ Run the listener using your microphone index (e.g., `--mic 1`) and latency profi
 ```bash
 python main.py --mic 1 --mode FAST
 ```
+
+For a mixed church livestream, use `ACCURATE` for the best local recognition. `FAST` is quicker but can miss short Telugu and Bible-number phrases.
 
 To watch every recognition stage in a local desktop window:
 

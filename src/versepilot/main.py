@@ -72,7 +72,7 @@ def main() -> int:
             if config.whisper_mode == "FAST":
                 config.whisper_model_name = "small"
             elif config.whisper_mode == "ACCURATE":
-                config.whisper_model_name = "medium"
+                config.whisper_model_name = "large-v3"
             else:
                 config.whisper_model_name = "small"
 
